@@ -1,0 +1,82 @@
+---
+title: "--- Day 4: Passport Processing ---"
+author: Fleur Kelpin
+date: Dec 3, 2020
+output: github_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+input <- readr::read_file("day04.txt") %>%
+  str_split("\n\n") %>%
+  unlist()
+input <- tibble(line = input)
+```
+
+```{r}
+passports <- input %>%
+  extract("line",
+    into = "byr", regex = "byr:([^\\s]+)", remove = FALSE, convert = TRUE
+  ) %>%
+  extract("line",
+    into = "iyr", regex = "iyr:([^\\s]+)", remove = FALSE, convert = TRUE
+  ) %>%
+  extract("line",
+    into = "eyr", regex = "eyr:([^\\s]+)", remove = FALSE, convert = TRUE
+  ) %>%
+  extract("line", into = "hgt", regex = "hgt:([^\\s]+)", remove = FALSE) %>%
+  extract("line", into = "hcl", regex = "hcl:([^\\s]+)", remove = FALSE) %>%
+  extract("line", into = "ecl", regex = "ecl:([^\\s]+)", remove = FALSE) %>%
+  extract("line", into = "pid", regex = "pid:([^\\s]+)", remove = FALSE) %>%
+  extract("line", into = "cid", regex = "cid:([^\\s]+)")
+passports
+```
+# Part 1
+Count the number of valid passports - those that have all required fields.
+Treat cid as optional. **In your batch file, how many passports are valid?**
+
+```{r}
+drop_na(passports, -cid) %>%
+  count()
+```
+
+# Part 2
+
+You can continue to ignore the cid field, but each other field has strict rules
+about what values are valid for automatic validation:
+
+* byr (Birth Year) - four digits; at least 1920 and at most 2002.
+* iyr (Issue Year) - four digits; at least 2010 and at most 2020.
+* eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
+* hgt (Height) - a number followed by either cm or in:
+  * If cm, the number must be at least 150 and at most 193.
+  * If in, the number must be at least 59 and at most 76.
+* hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
+* ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
+* pid (Passport ID) - a nine-digit number, including leading zeroes.
+* cid (Country ID) - ignored, missing or not.
+
+Count the number of **valid** passports - those that have all required fields
+**and valid values**. Continue to treat cid as optional. **In your batch file,
+how many passports are valid?**
+
+```{r}
+passports %>%
+  extract(hgt,
+    into = c("hgt", "hgt_dim"), regex = "^([\\d]+)(cm|in)$", convert = TRUE
+  ) %>%
+  mutate(hgt_dim = as_factor(hgt_dim)) %>%
+  drop_na(-cid) %>%
+  filter(between(byr, 1920, 2002)) %>%
+  filter(between(iyr, 2010, 2020)) %>%
+  filter(between(eyr, 2020, 2030)) %>%
+  filter(
+    (hgt_dim == "cm" & between(hgt, 150, 193)) |
+      (hgt_dim == "in" & between(hgt, 59, 76))
+  ) %>%
+  filter(str_detect(hcl, "^#[0-9a-f]{6}$")) %>%
+  filter(str_detect(ecl, "^amb|blu|brn|gry|grn|hzl|oth$")) %>%
+  filter(str_detect(pid, "^[0-9]{9}$")) %>%
+  mutate(ecl = as_factor(ecl)) %>%
+  count()
+```
