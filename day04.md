@@ -82,17 +82,14 @@ your batch file, how many passports are valid?**
       ) %>%
       mutate(hgt_dim = as_factor(hgt_dim)) %>%
       drop_na(-cid) %>%
-      filter(between(byr, 1920, 2002)) %>%
-      filter(between(iyr, 2010, 2020)) %>%
-      filter(between(eyr, 2020, 2030)) %>%
-      filter(
-        (hgt_dim == "cm" & between(hgt, 150, 193)) |
-          (hgt_dim == "in" & between(hgt, 59, 76))
-      ) %>%
-      filter(str_detect(hcl, "^#[0-9a-f]{6}$")) %>%
-      filter(str_detect(ecl, "^amb|blu|brn|gry|grn|hzl|oth$")) %>%
-      filter(str_detect(pid, "^[0-9]{9}$")) %>%
-      mutate(ecl = as_factor(ecl)) %>%
+      filter(between(byr, 1920, 2002),
+             between(iyr, 2010, 2020),
+             between(eyr, 2020, 2030),
+             hgt_dim == "cm" & between(hgt, 150, 193) |
+          hgt_dim == "in" & between(hgt, 59, 76),
+          str_detect(hcl, "^#[0-9a-f]{6}$"),
+          str_detect(ecl, "^amb|blu|brn|gry|grn|hzl|oth$"),
+          str_detect(pid, "^[0-9]{9}$")) %>%
       count()
 
     ## # A tibble: 1 x 1
