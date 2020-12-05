@@ -1,0 +1,24 @@
+---
+title: "--- Day 5: Binary Boarding ---"
+author: Fleur Kelpin
+date: Dec 3, 2020
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+input <- read_lines("day05.txt")
+as_tibble(input)
+```
+
+# Part 1
+
+```{r}
+seats <- input %>%
+  str_replace_all("B", "1") %>%
+  str_replace_all("F", "0") %>%
+  str_replace_all("R", "1") %>%
+  str_replace_all("L", "0") %>%
+  strtoi(2)
+max(seats)
+```
