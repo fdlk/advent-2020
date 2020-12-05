@@ -44,10 +44,7 @@ As a sanity check, look through your list of boarding passes. What is
 the highest seat ID on a boarding pass?
 
     seats <- input %>%
-      str_replace_all("B", "1") %>%
-      str_replace_all("F", "0") %>%
-      str_replace_all("R", "1") %>%
-      str_replace_all("L", "0") %>%
+      str_replace_all(c("[BR]" = "1", "[FL]" = "0")) %>%
       strtoi(2)
     max(seats)
 
@@ -68,7 +65,6 @@ Your seat wasn’t at the very front or back, though; the seats with IDs
 
 What is the ID of your seat?
 
-    candidates <- (min(seats)+1):(max(seats)-1)
-    candidates[!candidates %in% seats]
+    setdiff(min(seats):max(seats), seats)
 
     ## [1] 515
