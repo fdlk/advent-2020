@@ -13,9 +13,10 @@ input <- read_csv("day02.txt",
 ) %>%
   extract(line,
     "(\\d+)-(\\d+) (\\w): (\\w+)",
-    into = c("min", "max", "char", "pwd")
-  ) %>%
-  mutate(min = strtoi(min, 10), max = strtoi(max, 10))
+    into = c("min", "max", "char", "pwd"),
+    convert = TRUE
+  )
+input
 ```
 
 # Part 1
@@ -29,8 +30,7 @@ contain a at least 1 time and at most 3 times.
 ```{r}
 input %>%
   mutate(occurs = str_count(pwd, char)) %>%
-  filter(occurs >= min) %>%
-  filter(occurs <= max) %>%
+  filter(occurs %>% between(min, max)) %>%
   count()
 ```
 

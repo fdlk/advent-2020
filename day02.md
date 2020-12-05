@@ -10,9 +10,25 @@ Dec 2, 2020
     ) %>%
       extract(line,
         "(\\d+)-(\\d+) (\\w): (\\w+)",
-        into = c("min", "max", "char", "pwd")
-      ) %>%
-      mutate(min = strtoi(min, 10), max = strtoi(max, 10))
+        into = c("min", "max", "char", "pwd"),
+        convert = TRUE
+      )
+    input
+
+    ## # A tibble: 1,000 x 4
+    ##      min   max char  pwd                
+    ##    <int> <int> <chr> <chr>              
+    ##  1     1     4 n     nnnnn              
+    ##  2     5     7 z     qhcgzzz            
+    ##  3     7    11 m     mmmmmmsmmmmm       
+    ##  4     5     8 d     ldddtdgnzddddwl    
+    ##  5    16    18 q     qsqqqqqqqqqpqqqlqhq
+    ##  6     5     7 s     bwkbdlwns          
+    ##  7    14    17 v     vvvvvvvvvvvvvpvvxv 
+    ##  8     4     5 v     mvkvvn             
+    ##  9     2     5 h     lcwghhkpkxvzkvrmxrv
+    ## 10     2     9 m     kmdvdlvxmhgsmlzp   
+    ## # … with 990 more rows
 
 # Part 1
 
@@ -25,14 +41,13 @@ the password must contain a at least 1 time and at most 3 times.
 
     input %>%
       mutate(occurs = str_count(pwd, char)) %>%
-      filter(occurs >= min) %>%
-      filter(occurs <= max) %>%
+      filter(occurs %>% between(min, max)) %>%
       count()
 
     ## # A tibble: 1 x 1
     ##       n
     ##   <int>
-    ## 1   456
+    ## 1   411
 
 # Part 2
 
