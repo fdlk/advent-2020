@@ -1,0 +1,27 @@
+---
+title: "--- Day 5: Binary Boarding ---"
+author: Fleur Kelpin
+date: Dec 5, 2020
+output: github_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+input <- readr::read_file("day06.txt") %>%
+  str_split("\n\n") %>%
+  unlist()
+tibble(input)
+```
+
+# Part 1
+
+```{r}
+input %>%
+  str_match_all("\\w") %>%
+  map_dbl(function(answers){
+    answers %>%
+      unique() %>%
+      length()
+  }) %>%
+  sum()
+```
