@@ -7,3 +7,4 @@ Solutions for https://adventofcode.com/2020 in R
 * [Day 3: Toboggan Trajectory](day03.md)
 * [Day 4: Password Processing](day04.md)
 * [Day 5: Binary Boarding](day05.md)
+* [Day 6: Custom Customs](day06.md)
