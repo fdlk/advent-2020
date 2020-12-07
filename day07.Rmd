@@ -1,0 +1,79 @@
+---
+title: "--- Day 7: Handy Haversacks ---"
+author: Fleur Kelpin
+date: Dec 7, 2020
+output: github_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+input <- readr::read_lines("day07.txt") %>%
+  as_tibble()
+input
+```
+# Part 1
+How many bag colors can eventually contain at least one shiny gold bag? 
+
+```{r}
+who_contains <- function(type) {
+  containers <- str_match(
+    input$value,
+    paste0(
+      "(.+) bags contain .*(\\d)+ ",
+      type,
+      " bags?"
+    )
+  )[, 2]
+  containers[!is.na(containers)]
+}
+who_contains("shiny gold")
+```
+```{r}
+all_contains <- function(containers, checked) {
+  new_containers <- containers %>%
+    map(who_contains) %>%
+    unlist() %>%
+    unique() %>%
+    setdiff(checked)
+  num_found <- length(new_containers)
+  if (num_found == 0) {
+    return(0)
+  }
+  length(new_containers) + all_contains(
+    new_containers,
+    unique(c(
+      checked,
+      containers,
+      new_containers
+    ))
+  )
+}
+all_contains("shiny gold", c())
+```
+
+# Part 2
+How many individual bags are required inside your single shiny gold bag?
+
+```{r}
+contents <- function(type) {
+  inside <- input %>%
+    extract(value, paste0(type, " bags contain (.*)"), into = "line") %>%
+    separate_rows(line, sep = ",") %>%
+    extract(line,
+      "(\\d+) (.*) bags?",
+      convert = TRUE, into = c("num", "type")
+    ) %>%
+    drop_na()
+  if (nrow(inside) == 0) {
+    return(0)
+  }
+  inside %>%
+    rowwise() %>%
+    mutate(total = num + num * contents(type)) %>%
+    {
+      sum(.$total)
+    }
+}
+
+contents("shiny gold")
+```
