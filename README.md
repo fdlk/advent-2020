@@ -9,3 +9,4 @@ Solutions for https://adventofcode.com/2020 in R
 * [Day 5: Binary Boarding](day05.md)
 * [Day 6: Custom Customs](day06.md)
 * [Day 7: Handy Haversacks](day07.md)
+* [Day 8: Handheld Halting](day08.md)

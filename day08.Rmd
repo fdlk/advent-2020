@@ -1,0 +1,61 @@
+---
+title: "--- Day 8: Handheld Halting ---"
+author: Fleur Kelpin
+date: Dec 8, 2020
+output: github_document
+---
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+input <- readr::read_lines("day08.txt") %>%
+  tibble(instruction=.)
+input
+```
+# Part 1
+
+First let's parse the instructions.
+```{r}
+program <- input %>%
+  extract(instruction,
+          into=c("operation", "argument"),
+          regex="(\\w+) ([+-]\\d+)",
+          convert = TRUE)
+program
+```
+Then implement the instructions
+```{r}
+state <- list(acc=0, ip=0)
+nop <- function(acc, ip) {
+  list(acc = acc, ip = ip + 1)
+}
+acc <- function(arg, acc, ip) {
+  list(acc = acc + arg, ip = ip + 1)
+}
+jmp <- function(arg, acc, ip) {
+  list(acc = acc, ip = ip + arg)
+}
+
+step <- function(s) {
+  op <- program$operation[[s$ip + 1]]
+  arg <- program$argument[[s$ip + 1]]
+  switch(op,
+         "nop" = nop(s$acc, s$ip),
+         "acc" = acc(arg, s$acc, s$ip),
+         "jmp" = jmp(arg, s$acc, s$ip)
+         )
+}
+step(state)
+```
+Then we're ready to solve part 1:
+```{r}
+findLoop <- function() {
+  state <- list(acc=0, ip=0)
+  visited <- c()
+  while(!state$ip %in% visited) {
+    visited <- append(visited, state$ip)
+    state <- step(state)
+  }
+  state
+}
+findLoop()
+```
+
