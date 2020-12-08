@@ -4,7 +4,6 @@ author: Fleur Kelpin
 date: Dec 7, 2020
 output: github_document
 ---
-
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 input <- readr::read_lines("day07.txt") %>%
@@ -13,18 +12,17 @@ input
 ```
 # Part 1
 How many bag colors can eventually contain at least one shiny gold bag? 
-
 ```{r}
 who_contains <- function(type) {
-  containers <- str_match(
-    input$value,
-    paste0(
-      "(.+) bags contain .*(\\d)+ ",
-      type,
-      " bags?"
-    )
-  )[, 2]
-  containers[!is.na(containers)]
+  input %>%
+    extract(value,
+      paste0("(.+) bags contain .*", type, " bags?"),
+      into = c("container")
+    ) %>%
+    drop_na() %>%
+    {
+      .$container
+    }
 }
 who_contains("shiny gold")
 ```
@@ -50,10 +48,8 @@ all_contains <- function(containers, checked) {
 }
 all_contains("shiny gold", c())
 ```
-
 # Part 2
 How many individual bags are required inside your single shiny gold bag?
-
 ```{r}
 contents <- function(type) {
   inside <- input %>%

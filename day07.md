@@ -28,15 +28,15 @@ Dec 7, 2020
 How many bag colors can eventually contain at least one shiny gold bag?
 
     who_contains <- function(type) {
-      containers <- str_match(
-        input$value,
-        paste0(
-          "(.+) bags contain .*(\\d)+ ",
-          type,
-          " bags?"
-        )
-      )[, 2]
-      containers[!is.na(containers)]
+      input %>%
+        extract(value,
+          paste0("(.+) bags contain .*", type, " bags?"),
+          into = c("container")
+        ) %>%
+        drop_na() %>%
+        {
+          .$container
+        }
     }
     who_contains("shiny gold")
 
