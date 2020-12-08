@@ -34,7 +34,7 @@ jmp <- function(arg, acc, ip) {
   list(acc = acc, ip = ip + arg)
 }
 
-step <- function(s) {
+step <- function(program, s) {
   op <- program$operation[[s$ip + 1]]
   arg <- program$argument[[s$ip + 1]]
   switch(op,
@@ -43,19 +43,44 @@ step <- function(s) {
          "jmp" = jmp(arg, s$acc, s$ip)
          )
 }
-step(state)
+step(program, state)
 ```
 Then we're ready to solve part 1:
 ```{r}
-findLoop <- function() {
+findLoop <- function(program) {
   state <- list(acc=0, ip=0)
   visited <- c()
   while(!state$ip %in% visited) {
     visited <- append(visited, state$ip)
-    state <- step(state)
+    if (state$ip > nrow(program)-1) {
+      print("Terminated!")
+      print(state)
+      return(state)
+    }
+    state <- step(program, state)
   }
   state
 }
-findLoop()
+findLoop(program)
+```
+# Part 2
+```{r error=FALSE}
+fix <- function (program, i) {
+  op <- program$operation[[i]]
+  fixed <- program
+  if (op == 'jmp'){
+    fixed$operation[[i]] = 'nop'
+  }
+  if (op == 'nop'){
+    fixed$operation[[i]] = 'jmp'
+  }
+  fixed
+}
+
+for(i in 1:nrow(program)) {
+  program %>%
+    fix(i) %>%
+    findLoop
+}
 ```
 
