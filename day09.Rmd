@@ -14,7 +14,6 @@ The first step of attacking the weakness in the XMAS data is to find the first
 number in the list (after the preamble) which is not the sum of two of the 25
 numbers before it. **What is the first number that does not have this
 property?**
-
 ```{r}
 window <- 25
 i <- window + 1
@@ -30,5 +29,33 @@ i<-window + 1
 while(valid(i)) {
   i <- i+1
 }
-input[[i]]
+
+part1 <- input[[i]]
+part1
+```
+# Part 2
+
+The final step in breaking the XMAS encryption relies on the invalid number you
+just found: you must find a contiguous set of at least two numbers in your list
+which sum to the invalid number from step 1.
+
+To find the encryption weakness, add together the smallest and largest number in
+this contiguous range.
+
+**What is the encryption weakness in your XMAS-encrypted list of numbers?**
+
+```{r}
+valid_set <- function(window, start) {
+  sum(input[start:(start+window-1)]) == part1
+}
+
+for(window in 2:length(input)){
+  start <- 1:(length(input)-window)
+  valid_start <- map_lgl(start, ~ valid_set(window, .))
+  if (any(valid_start)) {
+    start <- which(valid_start)
+    range <- input[start:(start+window-1)]
+    print(min(range) + max(range))
+  }
+}
 ```

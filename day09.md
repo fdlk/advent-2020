@@ -43,6 +43,36 @@ not have this property?**
     while(valid(i)) {
       i <- i+1
     }
-    input[[i]]
+
+    part1 <- input[[i]]
+    part1
 
     ## [1] 41682220
+
+# Part 2
+
+The final step in breaking the XMAS encryption relies on the invalid
+number you just found: you must find a contiguous set of at least two
+numbers in your list which sum to the invalid number from step 1.
+
+To find the encryption weakness, add together the smallest and largest
+number in this contiguous range.
+
+**What is the encryption weakness in your XMAS-encrypted list of
+numbers?**
+
+    valid_set <- function(window, start) {
+      sum(input[start:(start+window-1)]) == part1
+    }
+
+    for(window in 2:length(input)){
+      start <- 1:(length(input)-window)
+      valid_start <- map_lgl(start, ~ valid_set(window, .))
+      if (any(valid_start)) {
+        start <- which(valid_start)
+        range <- input[start:(start+window-1)]
+        print(min(range) + max(range))
+      }
+    }
+
+    ## [1] 5388976
