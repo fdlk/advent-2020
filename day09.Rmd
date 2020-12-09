@@ -20,14 +20,14 @@ i <- window + 1
 
 valid <- function(i) {
   number <- input[[i]]
-  preamble <- input[(i-window):i-1]
+  preamble <- input[(i - window):i - 1]
   number - preamble
   any(preamble %in% (number - preamble))
 }
 
-i<-window + 1
-while(valid(i)) {
-  i <- i+1
+i <- window + 1
+while (valid(i)) {
+  i <- i + 1
 }
 
 part1 <- input[[i]]
@@ -46,15 +46,15 @@ this contiguous range.
 
 ```{r}
 valid_set <- function(window, start) {
-  sum(input[start:(start+window-1)]) == part1
+  sum(input[start:(start + window - 1)]) == part1
 }
 
-for(window in 2:length(input)){
-  start <- 1:(length(input)-window)
+for (window in 2:length(input)) {
+  start <- 1:(length(input) - window)
   valid_start <- map_lgl(start, ~ valid_set(window, .))
   if (any(valid_start)) {
     start <- which(valid_start)
-    range <- input[start:(start+window-1)]
+    range <- input[start:(start + window - 1)]
     print(min(range) + max(range))
   }
 }
