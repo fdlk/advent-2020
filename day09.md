@@ -1,0 +1,48 @@
+— Day 9: Encoding Error —
+================
+Fleur Kelpin
+Dec 9, 2020
+
+    library(tidyverse)
+    input <- readr::read_csv("day09.txt")[[1]]
+    as_tibble(input)
+
+    ## # A tibble: 999 x 1
+    ##    value
+    ##    <dbl>
+    ##  1     3
+    ##  2    36
+    ##  3    14
+    ##  4    50
+    ##  5     8
+    ##  6     2
+    ##  7    44
+    ##  8    30
+    ##  9    37
+    ## 10    20
+    ## # … with 989 more rows
+
+# Part 1
+
+The first step of attacking the weakness in the XMAS data is to find the
+first number in the list (after the preamble) which is not the sum of
+two of the 25 numbers before it. **What is the first number that does
+not have this property?**
+
+    window <- 25
+    i <- window + 1
+
+    valid <- function(i) {
+      number <- input[[i]]
+      preamble <- input[(i-window):i-1]
+      number - preamble
+      any(preamble %in% (number - preamble))
+    }
+
+    i<-window + 1
+    while(valid(i)) {
+      i <- i+1
+    }
+    input[[i]]
+
+    ## [1] 41682220
