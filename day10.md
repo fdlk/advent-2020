@@ -35,8 +35,7 @@ differences between the charging outlet, the adapters, and your device.
 3-jolt differences?**
 
     input %>%
-      embed(2) %>%
-      { .[, 1] - .[, 2] } %>%
+      diff() %>%
       { sum(. == 1) * sum(. == 3) }
 
     ## [1] 2346

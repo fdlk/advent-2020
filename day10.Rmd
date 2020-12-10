@@ -23,8 +23,7 @@ differences multiplied by the number of 3-jolt differences?**
 
 ```{r}
 input %>%
-  embed(2) %>%
-  { .[, 1] - .[, 2] } %>%
+  diff() %>%
   { sum(. == 1) * sum(. == 3) }
 ```
 
