@@ -6,7 +6,11 @@ output: github_document
 ---
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
-input <- readr::read_csv("day10.txt", col_names = FALSE)[[1]]
+input <- readr::read_csv("day10.txt", col_names = FALSE)[[1]] %>%
+  prepend(0) %>%
+  {append(., max(.) + 3)} %>%
+  sort()
+  
 as_tibble(input)
 ```
 
@@ -14,8 +18,22 @@ as_tibble(input)
 
 ```{r}
 input %>%
-  sort() %>%
   embed(2) %>%
   { .[, 1] - .[, 2] } %>%
-  { (sum(. == 1) + 1) * (sum(. == 3) + 1) }
+  { sum(. == 1) * sum(. == 3) }
+```
+
+# Part 2
+
+```{r}
+x <- tibble(jolt = input, ways=as.numeric(NA))
+x[1, 'ways'] = 1
+
+while((index <- detect_index(x$ways, is.na)) > 0 ){
+  joltage <- x[index, 'jolt']
+  blah <- filter(x, between(jolt, joltage-3, joltage-1))
+  x[index, 'ways'] = sum(blah$ways)
+}
+options(digits = 15)
+max(x$ways)
 ```
