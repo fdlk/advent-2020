@@ -11,3 +11,4 @@ Solutions for https://adventofcode.com/2020 in R
 * [Day 7: Handy Haversacks](day07.md)
 * [Day 8: Handheld Halting](day08.md)
 * [Day 9: Encoding Error](day09.md)
+* [Day 10: Adapter Array](day10.md)
