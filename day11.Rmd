@@ -1,0 +1,20 @@
+---
+title: "--- Day 11: Seating System ---"
+author: Fleur Kelpin
+date: Dec 11, 2020
+output: github_document
+---
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+input <- read_csv(file = "day11.txt", col_names = c("seat"))
+t <- input %>%
+  separate_rows(seat, sep = "", convert = TRUE) %>%
+  drop_na()
+seats <- matrix(data = t$seat, nrow = nrow(input), byrow = TRUE)
+seats
+```
+
+# Part 1
+```{r}
+
+```

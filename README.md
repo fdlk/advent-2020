@@ -12,3 +12,4 @@ Solutions for https://adventofcode.com/2020 in R
 * [Day 8: Handheld Halting](day08.md)
 * [Day 9: Encoding Error](day09.md)
 * [Day 10: Adapter Array](day10.md)
+* [Day 11: Seating System](day11.md)
