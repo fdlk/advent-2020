@@ -13,3 +13,4 @@ Solutions for https://adventofcode.com/2020 in R
 * [Day 9: Encoding Error](day09.md)
 * [Day 10: Adapter Array](day10.md)
 * [Day 11: Seating System](day11.md)
+* [Day 12: Rain Risk](day12.md)
