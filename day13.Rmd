@@ -39,20 +39,9 @@ Unfortunately, the one in the numbers package only works for ordinary integers
 and works for all examples but overflows on the actual puzzle input.
 
 Hand-rolled implementation adapted from https://codeforces.com/blog/entry/61290
-```{r}
-GCD <- function(a, b) {
-  if (b == 0) a else GCD(b, a %% b)
-}
-LCM <- function(a, b) {
-  a / GCD(a, b) * b
-}
-ex_GCD <- function(a, b) {
-  if (b == 0) {
-    return(list(x = 1, y = 0, d = a))
-  }
-  pom <- ex_GCD(b, a %% b)
-  list(x = pom$y, y = pom$x - a %/% b * pom$y, d = pom$d)
-}
+does an extra division to prevent overflow.
+```{r message=FALSE, warning=FALSE}
+library(numbers)
 normalize <- function(x, mod) {
   x <- x %% mod
   if (x < 0) {
@@ -60,30 +49,28 @@ normalize <- function(x, mod) {
   }
   x
 }
-chinese <- function(a, n) {
+chinese_no_overflow <- function(a, n) {
   ans <- a[[1]]
   lcm <- n[[1]]
   for (i in 2:length(a)) {
-    pom <- ex_GCD(lcm, n[i])
-    x1 <- pom$x
-    d <- pom$d
+    pom <- extGCD(lcm, n[i])
+    d <- pom[[1]]
+    x1 <- pom[[2]]
     if ((a[i] - ans) %% d != 0) {
       print("no solutions")
       return(NA)
     }
+    
     ans <- normalize(
       ans + x1 * (a[i] - ans) %/% d %% (n[i] %/% d) * lcm,
-      lcm * n[i] %/% d
+      (n[i] %/% d) * lcm
     )
     lcm <- LCM(lcm, n[i])
   }
   ans
 }
-```
-The bit64 package implements modulo arithmetic for 64 bit integers. Yay!
-```{r message=FALSE, warning=FALSE}
-library(bit64)
+options(digits=22)
 buses <- buses %>%
   mutate(mod = (id - row + 1) %% id)
-chinese(as.integer64(buses$mod), as.integer64(buses$id))
+chinese_no_overflow(buses$mod, buses$id)
 ```
