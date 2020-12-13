@@ -1,0 +1,32 @@
+---
+title: "--- Day 13: Shuttle Search ---"
+author: Fleur Kelpin
+date: Dec 13, 2020
+output: github_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+input <- readLines("day13.txt")
+input
+```
+# Part 1
+
+```{r}
+timestamp <- as.integer(input[[1]])
+buses <- tibble(id = input[[2]]) %>%
+  separate_rows(id) %>%
+  filter(id != "x") %>%
+  type_convert(cols(id = col_double()))
+buses
+```
+What is the ID of the earliest bus you can take to the airport multiplied by the 
+number of minutes you'll need to wait for that bus?
+
+```{r}
+first <-
+  buses %>%
+  mutate(wait = id - timestamp %% id) %>%
+  filter(wait == min(wait))
+first$id[[1]] * first$wait[[1]]
+```
