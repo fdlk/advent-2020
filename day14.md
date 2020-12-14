@@ -6,7 +6,9 @@ Dec 14, 2020
     library(tidyverse)
     input <- tibble(line = readLines("day14.txt")) %>%
       extract(line, "mask", "mask = ([01X]{36})", remove = FALSE) %>%
-      extract(line, c("address", "value"), "mem\\[(\\d+)\\] = (\\d+)", convert = TRUE)
+      extract(line, c("address", "value"), "mem\\[(\\d+)\\] = (\\d+)",
+        convert = TRUE
+      )
     input
 
     ## # A tibble: 570 x 3
@@ -42,24 +44,11 @@ Execute the initialization program. What is the sum of all values left
 in memory after it completes?
 
     i2b <- function(value) {
-      result <- logical(36)
-      index <- 36
-      while (value > 0) {
-        result[index] <- value %% 2 == 1
-        value <- value %/% 2
-        index <- index - 1
-      }
-      result
+      value %/% (2**(35:0)) %% 2 == 1
     }
 
     b2d <- function(bits) {
-      result <- 0
-      for (index in 1:36) {
-        if (bits[[index]]) {
-          result <- result + 2**(36 - index)
-        }
-      }
-      result
+      sum(2**(36 - which(bits)))
     }
 
     apply_mask <- function(value, mask) {
@@ -130,15 +119,11 @@ written all at once!
     }
     apply_mask_v2 <- function(value, mask) {
       bits <- i2b(value)
-      mask <- unlist(str_split(mask, ""))
-      applied <- map_chr(1:36, function(index) {
-        switch(mask[index],
-          "1" = "1",
-          "0" = if (bits[[index]]) "1" else "0",
-          "X" = "X"
-        )
-      })
-      expand_masks(str_c(applied, collapse = ""))
+      chars <- unlist(str_split(mask, ""))
+      for (i in str_which("0", chars)) {
+        substr(mask, i, i) <- if (bits[[i]]) "1" else "0"
+      }
+      expand_masks(mask)
     }
     apply_mask_v2(42, "000000000000000000000000000000X1001X")
 
@@ -150,9 +135,7 @@ written all at once!
         mask <- input$mask[[i]]
       } else {
         addresses <- apply_mask_v2(input$address[[i]], mask)
-        for (j in 1:length(addresses)) {
-          mem[addresses[[j]]] <- input$value[[i]]
-        }
+        mem[addresses] <- input$value[[i]]
       }
     }
     sum(values(mem))
