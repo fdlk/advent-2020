@@ -15,3 +15,4 @@ Solutions for https://adventofcode.com/2020 in R
 * [Day 11: Seating System](day11.md)
 * [Day 12: Rain Risk](day12.md)
 * [Day 13: Shuttle Search](day13.md)
+* [Day 14: Docking Data](day14.md)
