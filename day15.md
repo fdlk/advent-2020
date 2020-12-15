@@ -57,25 +57,36 @@ last number is a repeat).
 
 Given your starting numbers, what will be the 30000000th number spoken?
 
-    library(hash)
+We need a map here, but this is problematic in R. I tried with hash(),
+had to use as.character() on the keys and it took half an hour to
+compute this.
 
-    ## hash-2.2.6.1 provided by Decision Patterns
+Later found out that a large vector works way faster:
 
-    game <- hash()
+    game <- integer()
     for (i in 1:(length(input$number) - 1)) {
       number <- input$number[[i]]
-      game[as.character(number)] <- i
+      game[number + 1] <- i
     }
     last_number <- last(input$number)
+    tictoc::tic()
     for (i in (length(input$number) + 1):30000000) {
-      occurred_last <- game[[as.character(last_number)]]
-      game[[as.character(last_number)]] <- i - 1
-      last_number <- if (is.null(occurred_last)) {
+      occurred_last <- if ((last_number + 1) > length(game)) {
+        NA
+      } else {
+        game[[last_number + 1]]
+      }
+      game[[last_number + 1]] <- i - 1
+      last_number <- if (is.na(occurred_last)) {
         0
       } else {
         i - 1 - occurred_last
       }
     }
+    tictoc::toc()
+
+    ## 15.389 sec elapsed
+
     last_number
 
     ## [1] 11261
