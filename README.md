@@ -16,3 +16,4 @@ Solutions for https://adventofcode.com/2020 in R
 * [Day 12: Rain Risk](day12.md)
 * [Day 13: Shuttle Search](day13.md)
 * [Day 14: Docking Data](day14.md)
+* [Day 15: Rambunctious Recitation](day15.md)
