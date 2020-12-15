@@ -63,7 +63,7 @@ compute this.
 
 Later found out that a large vector works way faster:
 
-    game <- integer()
+    game <- rep(0, 30000000)
     for (i in 1:(length(input$number) - 1)) {
       number <- input$number[[i]]
       game[number + 1] <- i
@@ -71,13 +71,9 @@ Later found out that a large vector works way faster:
     last_number <- last(input$number)
     tictoc::tic()
     for (i in (length(input$number) + 1):30000000) {
-      occurred_last <- if ((last_number + 1) > length(game)) {
-        NA
-      } else {
-        game[[last_number + 1]]
-      }
+      occurred_last <- game[[last_number + 1]]
       game[[last_number + 1]] <- i - 1
-      last_number <- if (is.na(occurred_last)) {
+      last_number <- if (occurred_last == 0) {
         0
       } else {
         i - 1 - occurred_last
@@ -85,7 +81,7 @@ Later found out that a large vector works way faster:
     }
     tictoc::toc()
 
-    ## 15.389 sec elapsed
+    ## 4.069 sec elapsed
 
     last_number
 
