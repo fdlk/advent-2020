@@ -80,13 +80,13 @@ ticket scanning error rate?
         separate_rows(value, sep = ",", convert = T) %>%
         rowwise() %>%
         filter(!valid_value(value))
-      sum(invalid$value)
+      if (nrow(invalid) == 0) NA else sum(invalid$value)
     }
 
     part1 <- nearby_tickets %>%
       rowwise() %>%
       mutate(error = ticket_scanning_error_rate(values))
-    sum(part1$error)
+    sum(part1$error, na.rm = TRUE)
 
     ## [1] 26026
 
@@ -97,26 +97,10 @@ those tickets entirely. Use the remaining valid tickets to determine
 which field is which.
 
     valid_tickets <- part1 %>%
-      filter(error == 0) %>%
+      filter(is.na(error)) %>%
       {
         c(.$values, your_ticket)
       }
-    tibble(valid_tickets)
-
-    ## # A tibble: 192 x 1
-    ##    valid_tickets                                                                
-    ##    <chr>                                                                        
-    ##  1 692,125,595,331,803,765,721,249,729,162,226,523,821,137,297,588,296,299,720,…
-    ##  2 851,112,324,163,805,544,563,372,590,228,264,590,290,491,799,677,881,573,584,…
-    ##  3 318,471,224,717,144,113,521,320,280,234,522,833,515,514,543,630,128,221,279,…
-    ##  4 466,234,233,845,296,757,675,841,113,135,464,732,220,575,769,693,231,187,548,…
-    ##  5 179,471,485,215,287,334,848,153,546,473,238,675,487,56,595,484,279,366,692,8…
-    ##  6 532,422,215,370,552,577,171,757,58,686,169,830,849,52,422,128,218,630,424,419
-    ##  7 113,466,896,241,98,552,339,561,55,564,279,757,514,825,124,842,464,668,222,358
-    ##  8 599,166,826,588,831,129,188,669,74,820,640,876,669,825,231,163,280,282,64,474
-    ##  9 514,565,628,543,603,801,231,483,363,371,278,564,398,720,556,473,358,673,148,…
-    ## 10 723,881,767,799,351,674,876,695,477,124,677,267,265,565,425,462,272,284,769,…
-    ## # … with 182 more rows
 
 Using the valid ranges for each field, determine what order the fields
 appear on the tickets. The order is consistent between all tickets: if
@@ -155,7 +139,7 @@ Now if a row has only one TRUE value, we’ve found its index on the
 ticket. Fill in the index, and set the row and column to false, cause we
 know that other fields must match other indices. Rinse and repeat.
 
-    fields$index = NA_integer_
+    fields$index <- NA_integer_
     while (any(x)) {
       row <- rowSums(x) %>%
         map_lgl(~ . == 1) %>%
@@ -184,3 +168,30 @@ multiply those six values together?
     ##   `prod(value)`
     ##           <dbl>
     ## 1 1305243193339
+
+    fields %>%
+      arrange(index)
+
+    ## # A tibble: 20 x 6
+    ##    field              from1   to1 from2   to2 index
+    ##    <chr>              <int> <int> <int> <int> <int>
+    ##  1 zone                  34   188   212   959     1
+    ##  2 departure location    33   430   456   967     2
+    ##  3 arrival track         28   340   349   968     3
+    ##  4 departure station     42   864   875   957     4
+    ##  5 price                 48   922   939   951     5
+    ##  6 arrival location      50   487   507   954     6
+    ##  7 departure track       34    74    93   967     7
+    ##  8 route                 33   642   666   960     8
+    ##  9 departure date        40   399   417   955     9
+    ## 10 train                 50   604   630   971    10
+    ## 11 departure platform    42   805   821   968    11
+    ## 12 class                 49   524   543   951    12
+    ## 13 arrival platform      42   729   751   959    13
+    ## 14 row                   39   238   255   973    14
+    ## 15 seat                  48   148   161   973    15
+    ## 16 wagon                 45   898   921   966    16
+    ## 17 arrival station       34   693   718   956    17
+    ## 18 type                  29   299   316   952    18
+    ## 19 duration              40   372   397   951    19
+    ## 20 departure time        30   774   797   950    20

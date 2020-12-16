@@ -45,13 +45,13 @@ ticket_scanning_error_rate <- function(values) {
     separate_rows(value, sep = ",", convert = T) %>%
     rowwise() %>%
     filter(!valid_value(value))
-  sum(invalid$value)
+  if (nrow(invalid) == 0) NA else sum(invalid$value)
 }
 
 part1 <- nearby_tickets %>%
   rowwise() %>%
   mutate(error = ticket_scanning_error_rate(values))
-sum(part1$error)
+sum(part1$error, na.rm = TRUE)
 ```
 # Part 2
 
@@ -60,11 +60,10 @@ tickets entirely. Use the remaining valid tickets to determine which field is
 which.
 ```{r}
 valid_tickets <- part1 %>%
-  filter(error == 0) %>%
+  filter(is.na(error)) %>%
   {
     c(.$values, your_ticket)
   }
-tibble(valid_tickets)
 ```
 
 Using the valid ranges for each field, determine what order the fields appear on
@@ -102,7 +101,7 @@ Now if a row has only one TRUE value, we've found its index on the ticket.
 Fill in the index, and set the row and column to false, cause we know that
 other fields must match other indices. Rinse and repeat.
 ```{r}
-fields$index = NA_integer_
+fields$index <- NA_integer_
 while (any(x)) {
   row <- rowSums(x) %>%
     map_lgl(~ . == 1) %>%
@@ -127,4 +126,8 @@ fields %>%
   mutate(value = as.integer(unlist(str_split(your_ticket, ","))[[index]])) %>%
   ungroup() %>%
   summarize(prod(value))
+```
+```{r}
+fields %>%
+  arrange(index)
 ```
