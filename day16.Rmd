@@ -9,13 +9,15 @@ output: github_document
 library(tidyverse)
 fields <- tibble(line = readLines("day16-fields.txt")) %>%
   extract(line,
-          into=c("field", "from1", "to1", "from2", "to2"),
-          "([^:]*): ([0-9]+)-([0-9]+) or ([0-9]+)-([0-9]+)",
-          convert = T)
+    into = c("field", "from1", "to1", "from2", "to2"),
+    "([^:]*): ([0-9]+)-([0-9]+) or ([0-9]+)-([0-9]+)",
+    convert = T
+  )
 fields
 ```
 ```{r}
-your_ticket <- "137,173,167,139,73,67,61,179,103,113,163,71,97,101,109,59,131,127,107,53"
+your_ticket <-
+  "137,173,167,139,73,67,61,179,103,113,163,71,97,101,109,59,131,127,107,53"
 nearby_tickets <- tibble(values = readLines("day16-nearby.txt"))
 nearby_tickets
 ```
@@ -32,7 +34,7 @@ scanning error rate?
 
 ```{r}
 valid_value <- function(value) {
-  fields %>% 
+  fields %>%
     rowwise() %>%
     filter(between(value, from1, to1) | between(value, from2, to2)) %>%
     nrow() > 0
@@ -40,7 +42,7 @@ valid_value <- function(value) {
 
 ticket_scanning_error_rate <- function(values) {
   invalid <- tibble(value = values) %>%
-    separate_rows(value, sep=",", convert = T) %>%
+    separate_rows(value, sep = ",", convert = T) %>%
     rowwise() %>%
     filter(!valid_value(value))
   sum(invalid$value)
@@ -50,4 +52,79 @@ part1 <- nearby_tickets %>%
   rowwise() %>%
   mutate(error = ticket_scanning_error_rate(values))
 sum(part1$error)
+```
+# Part 2
+
+Now that you've identified which tickets contain invalid values, discard those
+tickets entirely. Use the remaining valid tickets to determine which field is
+which.
+```{r}
+valid_tickets <- part1 %>%
+  filter(error == 0) %>%
+  {
+    c(.$values, your_ticket)
+  }
+tibble(valid_tickets)
+```
+
+Using the valid ranges for each field, determine what order the fields appear on
+the tickets. The order is consistent between all tickets: if seat is the third
+field, it is the third field on every ticket, including your ticket.
+```{r}
+valid_values <- valid_tickets %>%
+  map(function(value) {
+    str_split(value, ",")
+  }) %>%
+  unlist() %>%
+  as.integer() %>%
+  matrix(nrow = length(valid_tickets), byrow = T)
+```
+We're drowning in numbers here, let's try and summarize them in a usable way.
+```{r}
+# index_options[[i]] is true if this field can be column with index i in the
+# valid_values list
+index_options <- function(from1, to1, from2, to2) {
+  valid_values %>%
+    map_lgl(~ between(., from1, to1) | between(., from2, to2)) %>%
+    matrix(nrow = length(valid_tickets), byrow = F) %>%
+    colSums() %>%
+    map_lgl(~ . == length(valid_tickets))
+}
+```
+Matrix `x[i,j]` indicates if field `i` can have index `j` on the ticket.
+```{r}
+x <- fields %>%
+  rowwise() %>%
+  mutate(index_options = list(index_options(from1, to1, from2, to2)))
+x <- matrix(unlist(x$index_options), ncol = nrow(fields), byrow = T)
+```
+Now if a row has only one TRUE value, we've found its index on the ticket.
+Fill in the index, and set the row and column to false, cause we know that
+other fields must match other indices. Rinse and repeat.
+```{r}
+fields$index = NA_integer_
+while (any(x)) {
+  row <- rowSums(x) %>%
+    map_lgl(~ . == 1) %>%
+    which()
+  row <- row[[1]]
+  col <- which(x[row, ])
+  col <- col[[1]]
+  fields$index[row] <- col
+  x[row, ] <- F
+  x[, col] <- F
+}
+```
+
+Once you work out which field is which, look for the six fields on your ticket
+that start with the word departure. What do you get if you multiply those six
+values together?
+```{r}
+options(digits = 22)
+fields %>%
+  filter(str_detect(field, "departure")) %>%
+  rowwise() %>%
+  mutate(value = as.integer(unlist(str_split(your_ticket, ","))[[index]])) %>%
+  ungroup() %>%
+  summarize(prod(value))
 ```
