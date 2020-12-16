@@ -1,0 +1,53 @@
+---
+title: "--- Day 16: Ticket Translation ---"
+author: Fleur Kelpin
+date: Dec 16, 2020
+output: github_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+fields <- tibble(line = readLines("day16-fields.txt")) %>%
+  extract(line,
+          into=c("field", "from1", "to1", "from2", "to2"),
+          "([^:]*): ([0-9]+)-([0-9]+) or ([0-9]+)-([0-9]+)",
+          convert = T)
+fields
+```
+```{r}
+your_ticket <- "137,173,167,139,73,67,61,179,103,113,163,71,97,101,109,59,131,127,107,53"
+nearby_tickets <- tibble(values = readLines("day16-nearby.txt"))
+nearby_tickets
+```
+# Part 1
+Start by determining which tickets are completely invalid; these are tickets
+that contain values which aren't valid for any field. Ignore your ticket for
+now.
+
+Adding together all of the invalid values produces your ticket scanning error
+rate.
+
+Consider the validity of the nearby tickets you scanned. What is your ticket
+scanning error rate?
+
+```{r}
+valid_value <- function(value) {
+  fields %>% 
+    rowwise() %>%
+    filter(between(value, from1, to1) | between(value, from2, to2)) %>%
+    nrow() > 0
+}
+
+ticket_scanning_error_rate <- function(values) {
+  invalid <- tibble(value = values) %>%
+    separate_rows(value, sep=",", convert = T) %>%
+    rowwise() %>%
+    filter(!valid_value(value))
+  sum(invalid$value)
+}
+
+part1 <- nearby_tickets %>%
+  rowwise() %>%
+  mutate(error = ticket_scanning_error_rate(values))
+sum(part1$error)
+```
