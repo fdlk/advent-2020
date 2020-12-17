@@ -34,10 +34,10 @@ many cubes are left in the active state after the sixth cycle?
           for(z in 2:dim[3]-1) {
             pop <- sum(state[x + (-1:1),
                              y + (-1:1),
-                             z + (-1:1)]) - state[x,y,z]
+                             z + (-1:1)])
             next_state[x,y,z] <- 
               (!state[x,y,z] & pop == 3) | 
-              (state[x,y,z] & between(pop, 2, 3))
+              (state[x,y,z] & between(pop, 3, 4))
           }
         }
       }
@@ -73,10 +73,10 @@ dimension actually has four spatial dimensions, not three.
               pop <- sum(state[x + (-1:1),
                                y + (-1:1),
                                z + (-1:1),
-                               w + (-1:1)]) - state[x,y,z,w]
+                               w + (-1:1)])
               next_state[x,y,z,w] <- 
                 (!state[x,y,z,w] & pop == 3) | 
-                (state[x,y,z,w] & between(pop, 2, 3))
+                (state[x,y,z,w] & between(pop, 3, 4))
             }
           }
         }
