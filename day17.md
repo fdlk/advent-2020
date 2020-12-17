@@ -17,27 +17,35 @@ Dec 17, 2020
 Starting with your given initial configuration, simulate six cycles. How
 many cubes are left in the active state after the sixth cycle?
 
-    dim <- c(n + 2 * (steps+1),
-             n + 2 * (steps+1),
-             1 + 2 * (steps+1))
+    dim <- c(
+      n + 2 * (steps + 1),
+      n + 2 * (steps + 1),
+      1 + 2 * (steps + 1)
+    )
     state <- array(F, dim = dim)
-    state[7+1:n,7+1:n,8] <- input
+    state[7 + 1:n, 7 + 1:n, 8] <- input
+    ds <- expand.grid(dx = -1:1, dy = -1:1, dz = -1:1)
+    innerxy <- 2:(dim[[1]] - 1)
+    innerzw <- 2:(dim[[3]] - 1)
 
-    for(i in 1:6) {
-      next_state <- array(F, dim = dim)
-      for(x in 2:dim[1]-1) {
-        for(y in 2:dim[2]-1) {
-          for(z in 2:dim[3]-1) {
-            pop <- sum(state[x + (-1:1),
-                             y + (-1:1),
-                             z + (-1:1)])
-            next_state[x,y,z] <- 
-              (!state[x,y,z] & pop == 3) | 
-              (state[x,y,z] & between(pop, 3, 4))
-          }
-        }
-      }
-      state <- next_state
+    for (i in 1:6) {
+      pop <- reduce(1:nrow(ds),
+        function(arr, index) {
+          arr + state[
+            innerxy + ds$dx[[index]],
+            innerxy + ds$dy[[index]],
+            innerzw + ds$dz[[index]]
+          ]
+        },
+        .init = array(0, dim = c(
+          2 * steps + n,
+          2 * steps + n,
+          2 * steps + 1
+        ))
+      )
+      state[innerxy, innerxy, innerzw] <-
+        (!state[innerxy, innerxy, innerzw] & pop == 3) |
+          (state[innerxy, innerxy, innerzw] & between(pop, 3, 4))
     }
     sum(state)
 
@@ -49,31 +57,36 @@ For some reason, your simulated results don’t match what the
 experimental energy source engineers expected. Apparently, the pocket
 dimension actually has four spatial dimensions, not three.
 
-    dim <- c(n + 2 * (steps+1),
-             n + 2 * (steps+1),
-             1 + 2 * (steps+1),
-             1 + 2 * (steps+1))
+    dim <- c(
+      n + 2 * (steps + 1),
+      n + 2 * (steps + 1),
+      1 + 2 * (steps + 1),
+      1 + 2 * (steps + 1)
+    )
     state <- array(F, dim = dim)
-    state[7+(1:n),7+(1:n),8,8] <- input
+    state[7 + (1:n), 7 + (1:n), 8, 8] <- input
+    ds <- expand.grid(dx = -1:1, dy = -1:1, dz = -1:1, dw = -1:1)
 
-    for(i in 1:6) {
-      next_state <- array(F, dim = dim)
-      for(x in 2:dim[1]-1) {
-        for(y in 2:dim[2]-1) {
-          for(z in 2:dim[3]-1) {
-            for(w in 2:dim[4]-1) {
-              pop <- sum(state[x + (-1:1),
-                               y + (-1:1),
-                               z + (-1:1),
-                               w + (-1:1)])
-              next_state[x,y,z,w] <- 
-                (!state[x,y,z,w] & pop == 3) | 
-                (state[x,y,z,w] & between(pop, 3, 4))
-            }
-          }
-        }
-      }
-      state <- next_state
+    for (i in 1:6) {
+      pop <- reduce(1:nrow(ds),
+        function(arr, index) {
+          arr + state[
+            innerxy + ds$dx[[index]],
+            innerxy + ds$dy[[index]],
+            innerzw + ds$dz[[index]],
+            innerzw + ds$dw[[index]]
+          ]
+        },
+        .init = array(0, dim = c(
+          2 * steps + n,
+          2 * steps + n,
+          2 * steps + 1,
+          2 * steps + 1
+        ))
+      )
+      state[innerxy, innerxy, innerzw, innerzw] <-
+        (!state[innerxy, innerxy, innerzw, innerzw] & pop == 3) |
+          (state[innerxy, innerxy, innerzw, innerzw] & between(pop, 3, 4))
     }
     sum(state)
 
