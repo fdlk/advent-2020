@@ -21,11 +21,7 @@ many cubes are left in the active state after the sixth cycle?
              n + 2 * (steps+1),
              1 + 2 * (steps+1))
     state <- array(F, dim = dim)
-    for(x in 1:n) {
-      for(y in 1:n) {
-        state[x+7,y+7,8] <- input[x,y]
-      }
-    }
+    state[7+1:n,7+1:n,8] <- input
 
     for(i in 1:6) {
       next_state <- array(F, dim = dim)
@@ -58,11 +54,7 @@ dimension actually has four spatial dimensions, not three.
              1 + 2 * (steps+1),
              1 + 2 * (steps+1))
     state <- array(F, dim = dim)
-    for(x in 1:n) {
-      for(y in 1:n) {
-        state[x+7,y+7,8,8] <- input[x,y]
-      }
-    }
+    state[7+(1:n),7+(1:n),8,8] <- input
 
     for(i in 1:6) {
       next_state <- array(F, dim = dim)

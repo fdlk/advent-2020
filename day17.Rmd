@@ -23,11 +23,7 @@ dim <- c(n + 2 * (steps+1),
          n + 2 * (steps+1),
          1 + 2 * (steps+1))
 state <- array(F, dim = dim)
-for(x in 1:n) {
-  for(y in 1:n) {
-    state[x+7,y+7,8] <- input[x,y]
-  }
-}
+state[7+1:n,7+1:n,8] <- input
 ```
 
 ```{r}
@@ -59,11 +55,7 @@ dim <- c(n + 2 * (steps+1),
          1 + 2 * (steps+1),
          1 + 2 * (steps+1))
 state <- array(F, dim = dim)
-for(x in 1:n) {
-  for(y in 1:n) {
-    state[x+7,y+7,8,8] <- input[x,y]
-  }
-}
+state[7+(1:n),7+(1:n),8,8] <- input
 ```
 ```{r}
 for(i in 1:6) {
