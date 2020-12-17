@@ -18,3 +18,4 @@ Solutions for https://adventofcode.com/2020 in R
 * [Day 14: Docking Data](day14.md)
 * [Day 15: Rambunctious Recitation](day15.md)
 * [Day 16: Ticket Translation](day16.md)
+* [Day 17: Conway Cubes](day17.md)
