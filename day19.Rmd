@@ -1,0 +1,59 @@
+---
+title: "--- Day 19: Monster Messages ---"
+author: Fleur Kelpin
+date: Dec 19, 2020
+output: github_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+input <- tibble(line = readLines("day19-rules.txt")) %>%
+  extract(line, c("number", "rules"), "(\\d+): (.*)") %>%
+  extract(rules, "letters", "\"(\\w)\"", remove=F) %>%
+  extract(rules, c("alt1",NA,"alt2"), "([0-9 ]*)(\\|(.*))?") %>%
+  mutate(number = as.integer(number)) %>%
+  extract(alt1, c("alt1a", "alt1b"), "([0-9]+)( [0-9]+)?", convert=T) %>%
+  extract(alt2, c("alt2a", "alt2b"), "([0-9]+)( [0-9]+)?", convert=T) %>%
+  arrange(number)
+input
+
+messages <- tibble(message = readLines("day19-messages.txt"))
+messages
+```
+# Part 1
+```{r}
+getRegex <- function(number) {
+  if (is.na(number)) {
+    return("")
+  }
+  if (!is.na(input$letters[[number+1]])) {
+    return(input$letters[[number+1]])
+  }
+  if (!is.na(input$alt2a[[number+1]])) {
+    paste0("(",
+           getRegex(input$alt1a[[number+1]]),
+           getRegex(input$alt1b[[number+1]]),
+           "|",
+           getRegex(input$alt2a[[number+1]]),
+           getRegex(input$alt2b[[number+1]]),
+           ")")
+  } else {
+    paste0("(",
+           getRegex(input$alt1a[[number+1]]),
+           getRegex(input$alt1b[[number+1]]),
+           ")")
+  }
+}
+getRegex(0)
+```
+
+```{r}
+messages %>%
+  rowwise() %>%
+  filter(str_detect(message,paste0("^",getRegex(0),"$"))) %>%
+  nrow()
+```
+```{r}
+messages %>%
+  summarise(max(str_length(message)))
+```
