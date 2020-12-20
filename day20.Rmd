@@ -1,0 +1,31 @@
+---
+title: "--- Day 20: Jurassic Jigsaw ---"
+author: Fleur Kelpin
+date: Dec 20, 2020
+output: github_document
+---
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+input <- read_file("day20.txt") %>%
+  str_split("\\n\\n") %>%
+  unlist() %>%
+  {tibble(line=.)} %>%
+  extract(line, c("id", "tile", NA), "Tile (\\d+):\\n((.|\\n)*)$", convert = T) %>%
+  mutate(num=row_number())
+input
+```
+```{r}
+n <- 10
+tiles <- array(FALSE, dim=c(n, n,nrow(input)))
+for(i in 1:nrow(input)){
+  tiles[,,i] <- input$tile[[i]] %>%
+    str_split("\n") %>%
+    unlist() %>%
+    map(~ str_split(., "")) %>%
+    unlist() %>%
+    map_lgl(~ . == "#") %>%
+    matrix(nrow=n)
+}
+tiles
+```
