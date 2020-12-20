@@ -7,6 +7,7 @@ output: github_document
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
+options(digits=22)
 input <- read_file("day20.txt") %>%
   str_split("\\n\\n") %>%
   unlist() %>%
@@ -25,7 +26,44 @@ for(i in 1:nrow(input)){
     map(~ str_split(., "")) %>%
     unlist() %>%
     map_lgl(~ . == "#") %>%
-    matrix(nrow=n)
+    matrix(nrow=n, byrow=T)
 }
-tiles
+tiles[,,1]
+```
+```{r}
+edges <- function(x) {
+  c(tiles[1,,x],
+    tiles[,1,x],
+    tiles[10,,x],
+    tiles[,10,x],
+    tiles[1,10:1,x],
+    tiles[10:1,1,x],
+    tiles[10,10:1,x],
+    tiles[10:1,10,x]) %>%
+  matrix(ncol=n, byrow=T)
+}
+edges(2)
+```
+
+```{r}
+matches <- function(i,j) {
+  matrix(t(c(t(edges(i)),t(edges(j)))), ncol=n, byrow=T) %>%
+    duplicated() %>%
+    any()
+}
+num_matches <- function(i) {
+  result <- 0
+  for(j in 1:nrow(input)) {
+    if(j != i && matches(i,j)){
+      result <- result + 1
+    }
+  }
+  result
+}
+input %>%
+  rowwise() %>%
+  mutate(matches = num_matches(num)) %>%
+  filter(matches == 2) %>%
+  ungroup() %>%
+  summarise(prod(id))
 ```
