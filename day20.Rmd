@@ -7,63 +7,184 @@ output: github_document
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
-options(digits=22)
+options(digits = 22)
 input <- read_file("day20.txt") %>%
   str_split("\\n\\n") %>%
   unlist() %>%
-  {tibble(line=.)} %>%
+  {
+    tibble(line = .)
+  } %>%
   extract(line, c("id", "tile", NA), "Tile (\\d+):\\n((.|\\n)*)$", convert = T) %>%
-  mutate(num=row_number())
+  mutate(num = row_number())
 input
 ```
 ```{r}
 n <- 10
-tiles <- array(FALSE, dim=c(n, n,nrow(input)))
-for(i in 1:nrow(input)){
-  tiles[,,i] <- input$tile[[i]] %>%
+tiles <- array(FALSE, dim = c(n, n, nrow(input)))
+for (i in 1:nrow(input)) {
+  tiles[, , i] <- input$tile[[i]] %>%
     str_split("\n") %>%
     unlist() %>%
     map(~ str_split(., "")) %>%
     unlist() %>%
     map_lgl(~ . == "#") %>%
-    matrix(nrow=n, byrow=T)
+    matrix(nrow = n, byrow = T)
 }
-tiles[,,1]
+tiles[, , 1]
 ```
 ```{r}
 edges <- function(x) {
-  c(tiles[1,,x],
-    tiles[,1,x],
-    tiles[10,,x],
-    tiles[,10,x],
-    tiles[1,10:1,x],
-    tiles[10:1,1,x],
-    tiles[10,10:1,x],
-    tiles[10:1,10,x]) %>%
-  matrix(ncol=n, byrow=T)
+  c(
+    tiles[1, , x],
+    tiles[, 1, x],
+    tiles[10, , x],
+    tiles[, 10, x],
+    tiles[1, 10:1, x],
+    tiles[10:1, 1, x],
+    tiles[10, 10:1, x],
+    tiles[10:1, 10, x]
+  ) %>%
+    matrix(ncol = n, byrow = T)
 }
 edges(2)
 ```
-
 ```{r}
-matches <- function(i,j) {
-  matrix(t(c(t(edges(i)),t(edges(j)))), ncol=n, byrow=T) %>%
+matches <- function(i, j) {
+  matrix(t(c(t(edges(i)), t(edges(j)))), ncol = n, byrow = T) %>%
     duplicated() %>%
     any()
 }
 num_matches <- function(i) {
   result <- 0
-  for(j in 1:nrow(input)) {
-    if(j != i && matches(i,j)){
+  for (j in 1:nrow(input)) {
+    if (j != i && matches(i, j)) {
       result <- result + 1
     }
   }
   result
 }
-input %>%
+corners <- input %>%
   rowwise() %>%
-  mutate(matches = num_matches(num)) %>%
-  filter(matches == 2) %>%
-  ungroup() %>%
-  summarise(prod(id))
+  filter(num_matches(num) == 2) %>%
+  ungroup()
+
+summarise(corners, prod(id))
+```
+# Part 2
+```{r}
+neighbors <- matrix(FALSE, nrow = nrow(input), ncol = nrow(input))
+for (i in 1:nrow(input)) {
+  for (j in 1:nrow(input)) {
+    neighbors[i, j] <- i != j & matches(i, j)
+  }
+}
+```
+```{r}
+input <- input %>%
+  rowwise() %>%
+  mutate(nb <- list(which(neighbors[num, ])))
+input
+```
+There are a lot of possible ways to lay this puzzle. Once we pick the top left
+and the tile to the right of that, we can figure out the layout of the whole
+grid
+```{r}
+m <- sqrt(nrow(input))
+puzzle <- matrix(NA_integer_, nrow = m, ncol = m)
+puzzle[1, 1] <- corners$num[[1]]
+puzzle[1, 2] <- which(neighbors[puzzle[1, 1], ])[[1]]
+for (j in 3:m) {
+  candidates <- which(neighbors[puzzle[1, j - 1], ])
+  edge <- map_lgl(candidates, ~ num_matches(.) < 4 & !. %in% puzzle)
+  puzzle[1, j] <- candidates[which(edge)[[1]]]
+}
+for (i in 2:m) {
+  candidates <- which(neighbors[puzzle[i - 1, 1], ])
+  edge <- map_lgl(candidates, ~ num_matches(.) < 4 & !. %in% puzzle)
+  puzzle[i, 1] <- candidates[which(edge)[[1]]]
+  for (j in 2:m) {
+    left <- puzzle[i, j - 1]
+    top <- puzzle[i - 1, j]
+    candidates <- which(neighbors[left, ] & neighbors[top, ])
+    puzzle[i, j] <- candidates[!(candidates %in% puzzle)][[1]]
+  }
+}
+puzzle
+```
+Flip them tiles!
+```{r}
+flip <- function(tile) {
+  result <- array(dim = c(n, n, 8))
+  result[, , 1] <- tile
+  result[, , 2] <- t(tile)
+  result[, , 3] <- tile[, n:1]
+  result[, , 4] <- t(tile[, n:1])
+  result[, , 5] <- tile[n:1, ]
+  result[, , 6] <- t(tile[n:1, ])
+  result[, , 7] <- tile[n:1, n:1]
+  result[, , 8] <- t(tile[n:1, n:1])
+  result
+}
+```
+
+```{r}
+shared_edges <- function(i, j) {
+  e <- matrix(t(c(t(edges(i)), t(edges(j)))), ncol = n, byrow = T)
+  e[duplicated(e), ]
+}
+shared_edges(123, 120)
+```
+```{r}
+orientation_rb <- function(i, j) {
+  piece <- puzzle[i, j]
+  right <- puzzle[i, j + 1]
+  bottom <- puzzle[i + 1, j]
+  right_edges <- shared_edges(piece, right)
+  bottom_edges <- shared_edges(piece, bottom)
+  tile <- tiles[, , piece]
+  flips <- flip(tile)
+  right_edge_flips <- t(flips[, 10, ])
+  bottom_edge_flips <- t(flips[10, , ])
+  flip_index <- which(map_lgl(1:8, ~
+  (all(right_edge_flips[., ] == right_edges[1, ]) |
+    all(right_edge_flips[., ] == right_edges[2, ])) &
+    (all(bottom_edge_flips[., ] == bottom_edges[1, ]) |
+      all(bottom_edge_flips[., ] == bottom_edges[2, ]))))
+  flips[, , flip_index]
+}
+orientation_rb(1, 1)
+```
+```{r}
+orientation_lt <- function(i, j) {
+  piece <- puzzle[i, j]
+  left <- puzzle[i, j - 1]
+  top <- puzzle[i - 1, j]
+  left_edges <- shared_edges(piece, left)
+  top_edges <- shared_edges(piece, top)
+  tile <- tiles[, , piece]
+  flips <- flip(tile)
+  left_edge_flips <- t(flips[, 1, ])
+  top_edge_flips <- t(flips[1, , ])
+  flip_index <- which(map_lgl(1:8, ~
+  (all(left_edge_flips[., ] == left_edges[1, ]) |
+    all(left_edge_flips[., ] == left_edges[2, ])) &
+    (all(top_edge_flips[., ] == top_edges[1, ]) |
+      all(top_edge_flips[., ] == top_edges[2, ]))))
+  flips[, , flip_index]
+}
+all(orientation_lt(4, 2) == orientation_rb(4, 2))
+```
+```{r}
+map <- matrix(nrow = m * (n - 1) + 1, ncol = m * (n - 1) + 1)
+for (i in 1:m) {
+  for (j in 1:m) {
+    top_left <- c((i - 1) * 9, (j - 1) * 9)
+    if (j < m & i < m) {
+      map[1:10 + top_left[[1]], 1:10 + top_left[[2]]] <- orientation_rb(i, j)
+    } else if (j > 1 & i > 1){
+      map[1:10 + top_left[[1]], 1:10 + top_left[[2]]] <- orientation_lt(i, j)
+    }
+  }
+}
+map
 ```
