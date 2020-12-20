@@ -9,11 +9,11 @@ output: github_document
 library(tidyverse)
 input <- tibble(line = readLines("day19-rules.txt")) %>%
   extract(line, c("number", "rules"), "(\\d+): (.*)") %>%
-  extract(rules, "letters", "\"(\\w)\"", remove=F) %>%
-  extract(rules, c("alt1",NA,"alt2"), "([0-9 ]*)(\\|(.*))?") %>%
+  extract(rules, "letters", "\"(\\w)\"", remove = F) %>%
+  extract(rules, c("alt1", NA, "alt2"), "([0-9 ]*)(\\|(.*))?") %>%
   mutate(number = as.integer(number)) %>%
-  extract(alt1, c("alt1a", "alt1b"), "([0-9]+)( [0-9]+)?", convert=T) %>%
-  extract(alt2, c("alt2a", "alt2b"), "([0-9]+)( [0-9]+)?", convert=T) %>%
+  extract(alt1, c("alt1a", "alt1b"), "([0-9]+)( [0-9]+)?", convert = T) %>%
+  extract(alt2, c("alt2a", "alt2b"), "([0-9]+)( [0-9]+)?", convert = T) %>%
   arrange(number)
 input
 
@@ -22,26 +22,32 @@ messages
 ```
 # Part 1
 ```{r}
-getRegex <- function(number) {
-  if (is.na(number)) {
+getRegex <- function(num) {
+  if (is.na(num)) {
     return("")
   }
-  if (!is.na(input$letters[[number+1]])) {
-    return(input$letters[[number+1]])
+  data <- input %>%
+    filter(number == num)
+  if (!is.na(data$letters[[1]])) {
+    return(data$letters[[1]])
   }
-  if (!is.na(input$alt2a[[number+1]])) {
-    paste0("(",
-           getRegex(input$alt1a[[number+1]]),
-           getRegex(input$alt1b[[number+1]]),
-           "|",
-           getRegex(input$alt2a[[number+1]]),
-           getRegex(input$alt2b[[number+1]]),
-           ")")
+  if (!is.na(data$alt2a[[1]])) {
+    paste0(
+      "(",
+      getRegex(data$alt1a[[1]]),
+      getRegex(data$alt1b[[1]]),
+      "|",
+      getRegex(data$alt2a[[1]]),
+      getRegex(data$alt2b[[1]]),
+      ")"
+    )
   } else {
-    paste0("(",
-           getRegex(input$alt1a[[number+1]]),
-           getRegex(input$alt1b[[number+1]]),
-           ")")
+    paste0(
+      "(",
+      getRegex(data$alt1a[[1]]),
+      getRegex(data$alt1b[[1]]),
+      ")"
+    )
   }
 }
 getRegex(0)
@@ -50,10 +56,64 @@ getRegex(0)
 ```{r}
 messages %>%
   rowwise() %>%
-  filter(str_detect(message,paste0("^",getRegex(0),"$"))) %>%
+  filter(str_detect(message, paste0("^", getRegex(0), "$"))) %>%
   nrow()
+```
+# Part 2
+```{r}
+getRegex2 <- function(num) {
+  if (is.na(num)) {
+    return("")
+  }
+  if (num == 8) {
+    return(paste0("(", getRegex2(42), "+)"))
+  }
+  if (num == 11) {
+    return(
+      paste0(
+        "(",
+        getRegex2(42),
+        "){5}(",
+        getRegex2(31),
+        "){5}"
+      )
+    )
+  }
+  data <- input %>%
+    filter(number == num)
+  if (!is.na(data$letters[[1]])) {
+    return(data$letters[[1]])
+  }
+  if (!is.na(data$alt2a[[1]])) {
+    paste0(
+      "((",
+      getRegex2(data$alt1a[[1]]),
+      getRegex2(data$alt1b[[1]]),
+      ")|(",
+      getRegex2(data$alt2a[[1]]),
+      getRegex2(data$alt2b[[1]]),
+      "))"
+    )
+  } else {
+    paste0(
+      "(",
+      getRegex2(data$alt1a[[1]]),
+      getRegex2(data$alt1b[[1]]),
+      ")"
+    )
+  }
+}
+regex <- paste0("^", getRegex2(0), "$")
+regex
 ```
 ```{r}
 messages %>%
-  summarise(max(str_length(message)))
+  rowwise() %>%
+  filter(str_detect(message, regex)) %>%
+  nrow()
 ```
+
+```{r}
+363 + 35 + 13 + 3
+```
+
