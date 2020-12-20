@@ -114,6 +114,7 @@ puzzle
 Flip them tiles!
 ```{r}
 flip <- function(tile) {
+  n <- dim(tile)[[1]]
   result <- array(dim = c(n, n, 8))
   result[, , 1] <- tile
   result[, , 2] <- t(tile)
@@ -133,8 +134,6 @@ shared_edges <- function(i, j) {
   e[duplicated(e), ]
 }
 shared_edges(123, 120)
-```
-```{r}
 orientation_rb <- function(i, j) {
   piece <- puzzle[i, j]
   right <- puzzle[i, j + 1]
@@ -155,36 +154,103 @@ orientation_rb <- function(i, j) {
 orientation_rb(1, 1)
 ```
 ```{r}
-orientation_lt <- function(i, j) {
+orientation_l <- function(i, j, left_edge) {
   piece <- puzzle[i, j]
   left <- puzzle[i, j - 1]
-  top <- puzzle[i - 1, j]
   left_edges <- shared_edges(piece, left)
-  top_edges <- shared_edges(piece, top)
   tile <- tiles[, , piece]
   flips <- flip(tile)
   left_edge_flips <- t(flips[, 1, ])
-  top_edge_flips <- t(flips[1, , ])
-  flip_index <- which(map_lgl(1:8, ~
-  (all(left_edge_flips[., ] == left_edges[1, ]) |
-    all(left_edge_flips[., ] == left_edges[2, ])) &
-    (all(top_edge_flips[., ] == top_edges[1, ]) |
-      all(top_edge_flips[., ] == top_edges[2, ]))))
+  flip_index <- which(map_lgl(1:8, ~ all(left_edge_flips[., ] == left_edge)))
   flips[, , flip_index]
 }
-all(orientation_lt(4, 2) == orientation_rb(4, 2))
+orientation_t <- function(i, j, top_edge) {
+  piece <- puzzle[i, j]
+  top <- puzzle[i - 1, j]
+  top_edges <- shared_edges(piece, top)
+  tile <- tiles[, , piece]
+  flips <- flip(tile)
+  top_edge_flips <- t(flips[1, , ])
+  flip_index <- which(map_lgl(1:8, ~ all(top_edge_flips[., ] == top_edge)))
+  flips[, , flip_index]
+}
 ```
 ```{r}
-map <- matrix(nrow = m * (n - 1) + 1, ncol = m * (n - 1) + 1)
+map_with_stitches <- matrix(nrow = m * (n - 1) + 1, ncol = m * (n - 1) + 1)
 for (i in 1:m) {
   for (j in 1:m) {
     top_left <- c((i - 1) * 9, (j - 1) * 9)
     if (j < m & i < m) {
-      map[1:10 + top_left[[1]], 1:10 + top_left[[2]]] <- orientation_rb(i, j)
-    } else if (j > 1 & i > 1){
-      map[1:10 + top_left[[1]], 1:10 + top_left[[2]]] <- orientation_lt(i, j)
+      tile <- orientation_rb(i, j)
+    } else if (j == m & i < m) {
+      left_edge <- map_with_stitches[1:10 + top_left[[1]], 1 + top_left[[2]]]
+      tile <- orientation_l(i, j, left_edge)
+    } else {
+      top_edge <- map_with_stitches[1 + top_left[[1]], 1:10 + top_left[[2]]]
+      tile <- orientation_t(i, j, top_edge)
     }
+    map_with_stitches[1:10 + top_left[[1]], 1:10 + top_left[[2]]] <- tile
   }
 }
-map
+map <- matrix(nrow = m * (n - 2), ncol = m * (n - 2))
+for (i in 1:m) {
+  for (j in 1:m) {
+    top_left_from <- c((i - 1) * 9, (j - 1) * 9)
+    top_left_to <- c((i - 1) * 8, (j - 1) * 8)
+    map[
+      1:8 + top_left_to[[1]],
+      1:8 + top_left_to[[2]]
+    ] <-
+      map_with_stitches[
+        2:9 + top_left_from[[1]],
+        2:9 + top_left_from[[2]]
+      ]
+  }
+}
+```
+Now go hunting for the monsters!
+```{r}
+monster <- read_lines("day20-monster.txt") %>%
+  map(~ str_split(., "")) %>%
+  unlist() %>%
+  map_lgl(~ . == "#") %>%
+  matrix(nrow = 3, byrow = T)
+```
+
+```{r}
+remove_monster <- function(i, j, map) {
+  if (all((map[
+    i + 1:nrow(monster) - 1,
+    j + 1:ncol(monster) - 1
+  ] & monster) == monster)) {
+    map[i + 1:nrow(monster) - 1, j + 1:ncol(monster) - 1] <-
+      map[i + 1:nrow(monster) - 1, j + 1:ncol(monster) - 1] & !monster
+    TRUE
+  } else {
+    FALSE
+  }
+}
+```
+```{r}
+flipped_maps <- flip(map)
+for (k in 1:8) {
+  found_monsters <- FALSE
+  for (i in 1:(dim(flipped_maps)[[1]] - dim(monster)[[1]])) {
+    for (j in 1:(dim(flipped_maps)[[2]] - dim(monster)[[2]])) {
+      if (all((flipped_maps[
+        i + 1:nrow(monster) - 1,
+        j + 1:ncol(monster) - 1,
+        k
+      ] & monster) == monster)) {
+        flipped_maps[i + 1:nrow(monster) - 1, j + 1:ncol(monster) - 1, k] <-
+          flipped_maps[i + 1:nrow(monster) - 1, j + 1:ncol(monster) - 1, k] & !monster
+        found_monsters <- TRUE
+      }
+    }
+  }
+  if (found_monsters) {
+    print(k)
+    print(sum(flipped_maps[, , k]))
+  }
+}
 ```
