@@ -22,98 +22,71 @@ messages
 ```
 # Part 1
 ```{r}
-getRegex <- function(num) {
+getMessages <- function(num) {
   if (is.na(num)) {
-    return("")
+    return(character())
   }
-  data <- input %>%
-    filter(number == num)
-  if (!is.na(data$letters[[1]])) {
-    return(data$letters[[1]])
+  rule <- input %>% filter(number == num)
+  letters <- rule$letters[[1]]
+  if (!is.na(letters)) {
+    return(letters)
   }
-  if (!is.na(data$alt2a[[1]])) {
-    paste0(
-      "(",
-      getRegex(data$alt1a[[1]]),
-      getRegex(data$alt1b[[1]]),
-      "|",
-      getRegex(data$alt2a[[1]]),
-      getRegex(data$alt2b[[1]]),
-      ")"
-    )
+  alt1a <- rule$alt1a[[1]]
+  alt1b <- rule$alt1b[[1]]
+  alt2a <- rule$alt2a[[1]]
+  alt2b <- rule$alt2b[[1]]
+  if (!is.na(alt2a)) {
+    union(
+      getMessagesAB(alt1a, alt1b),
+      getMessagesAB(alt2a, alt2b)
+    ) %>%
+      unique()
   } else {
-    paste0(
-      "(",
-      getRegex(data$alt1a[[1]]),
-      getRegex(data$alt1b[[1]]),
-      ")"
-    )
+    getMessagesAB(alt1a, alt1b)
   }
 }
-getRegex(0)
+getMessagesAB <- function(pre, post) {
+  a <- getMessages(pre)
+  if (is.na(post)) {
+    return(a)
+  }
+  b <- getMessages(post)
+  crossing(a, b) %>%
+    mutate(x = paste0(a, b)) %>%
+    {
+      .$x
+    } %>%
+    unique()
+}
 ```
 
 ```{r}
-messages %>%
-  rowwise() %>%
-  filter(str_detect(message, paste0("^", getRegex(0), "$"))) %>%
-  nrow()
+messages$message %>%
+  intersect(getMessages(0)) %>%
+  length()
 ```
 # Part 2
-```{r}
-getRegex2 <- function(num) {
-  if (is.na(num)) {
-    return("")
-  }
-  if (num == 8) {
-    return(paste0("(", getRegex2(42), "+)"))
-  }
-  if (num == 11) {
-    return(
-      paste0(
-        "(",
-        getRegex2(42),
-        "){5}(",
-        getRegex2(31),
-        "){5}"
-      )
-    )
-  }
-  data <- input %>%
-    filter(number == num)
-  if (!is.na(data$letters[[1]])) {
-    return(data$letters[[1]])
-  }
-  if (!is.na(data$alt2a[[1]])) {
-    paste0(
-      "((",
-      getRegex2(data$alt1a[[1]]),
-      getRegex2(data$alt1b[[1]]),
-      ")|(",
-      getRegex2(data$alt2a[[1]]),
-      getRegex2(data$alt2b[[1]]),
-      "))"
-    )
-  } else {
-    paste0(
-      "(",
-      getRegex2(data$alt1a[[1]]),
-      getRegex2(data$alt1b[[1]]),
-      ")"
-    )
-  }
-}
-regex <- paste0("^", getRegex2(0), "$")
-regex
+
+As you look over the list of messages, you realize your matching rules aren't quite right. To fix them, completely replace rules 8: 42 and 11: 42 31 with the following:
 ```
+8: 42 | 42 8
+11: 42 31 | 42 11 31
+```
+The other relevant rule is `0: 8 11`
 ```{r}
+getRegex <- function(num) {
+  getMessages(num) %>%
+    paste(collapse = "|") %>%
+    {paste0("(", ., ")")}
+}
+reg42 <- getRegex(42)
+reg11 <- getRegex(11)
+reg31 <- getRegex(31)
+regex <- paste0("^", reg42, "+((", reg42, reg31, ")|(", reg42, "{2}", reg31,
+                "{2})|(", reg42, "{3}", reg31, "{3})|(", reg42, "{4}", reg31,
+                "{4}))$")
 messages %>%
   rowwise() %>%
   filter(str_detect(message, regex)) %>%
   nrow()
 ```
-
-```{r}
-363 + 35 + 13 + 3
-```
-

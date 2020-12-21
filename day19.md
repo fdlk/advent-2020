@@ -49,111 +49,74 @@ Dec 19, 2020
 
 # Part 1
 
-    getRegex <- function(number) {
-      if (is.na(number)) {
-        return("")
+    getMessages <- function(num) {
+      if (is.na(num)) {
+        return(character())
       }
-      if (!is.na(input$letters[[number + 1]])) {
-        return(input$letters[[number + 1]])
+      rule <- input %>% filter(number == num)
+      letters <- rule$letters[[1]]
+      if (!is.na(letters)) {
+        return(letters)
       }
-      if (!is.na(input$alt2a[[number + 1]])) {
-        paste0(
-          "(",
-          getRegex(input$alt1a[[number + 1]]),
-          getRegex(input$alt1b[[number + 1]]),
-          "|",
-          getRegex(input$alt2a[[number + 1]]),
-          getRegex(input$alt2b[[number + 1]]),
-          ")"
-        )
+      alt1a <- rule$alt1a[[1]]
+      alt1b <- rule$alt1b[[1]]
+      alt2a <- rule$alt2a[[1]]
+      alt2b <- rule$alt2b[[1]]
+      if (!is.na(alt2a)) {
+        union(
+          getMessagesAB(alt1a, alt1b),
+          getMessagesAB(alt2a, alt2b)
+        ) %>%
+          unique()
       } else {
-        paste0(
-          "(",
-          getRegex(input$alt1a[[number + 1]]),
-          getRegex(input$alt1b[[number + 1]]),
-          ")"
-        )
+        getMessagesAB(alt1a, alt1b)
       }
     }
-    getRegex(0)
+    getMessagesAB <- function(pre, post) {
+      a <- getMessages(pre)
+      if (is.na(post)) {
+        return(a)
+      }
+      b <- getMessages(post)
+      crossing(a, b) %>%
+        mutate(x = paste0(a, b)) %>%
+        {
+          .$x
+        } %>%
+        unique()
+    }
 
-    ## [1] "(((((b(a(((bb|aa)b|(bb)a)a|(b(bb))b)|b(((ab|b(a|b))(a|b))b|(a(ab|b(a|b))|b(ba|aa))a))|a(a(a(((a|b)(a|b))b|(ab|aa)a)|b(b((a|b)b|aa)|a(ab|aa)))|b(a(((a|b)b|aa)a|(bb|aa)b)|b(b(ba|aa)|a(bb)))))a|(a((b(b((a|b)(a|b))|a(ab))|a(b(bb)|a((a|b)(a|b))))b|(((ba)a)a|(b(ab)|a(bb|ba))b)a)|b(a(((a|b)(ba|aa))b|((bb)a|(ab|b(a|b))b)a)|b((((a|b)b|aa)a|(ab|b(a|b))b)b|(a(bb))a)))b)a|((a(b((a(ab|aa)|b(ab|bb))a|(b((a|b)b|aa)|a(ab))b)|a(a(b(ba|aa)|a(bb))|b((ba|aa)b|((a|b)b|aa)a)))|b(((b((a|b)b|aa)|a(ab))a|((ab|bb)b|((a|b)b|aa)a)b)a|(a((ab)b|(bb)a)|b((ab)a|(ba|aa)b))b))a|(a(((b(ba|aa)|a(bb|aa))b|(b(ba|aa)|a(bb))a)a|(a((bb)a|(ba)b)|b(a(aa)|b(ba|aa)))b)|b((b(((a|b)a|ab)a|((a|b)(a|b))b)|a(b((a|b)a|ab)|a(ab|b(a|b))))b|(((ab|bb)b|((a|b)b|aa)a)a|(a(bb|aa)|b(aa|b(a|b)))b)a))b)b))((((b(a(((bb|aa)b|(bb)a)a|(b(bb))b)|b(((ab|b(a|b))(a|b))b|(a(ab|b(a|b))|b(ba|aa))a))|a(a(a(((a|b)(a|b))b|(ab|aa)a)|b(b((a|b)b|aa)|a(ab|aa)))|b(a(((a|b)b|aa)a|(bb|aa)b)|b(b(ba|aa)|a(bb)))))a|(a((b(b((a|b)(a|b))|a(ab))|a(b(bb)|a((a|b)(a|b))))b|(((ba)a)a|(b(ab)|a(bb|ba))b)a)|b(a(((a|b)(ba|aa))b|((bb)a|(ab|b(a|b))b)a)|b((((a|b)b|aa)a|(ab|b(a|b))b)b|(a(bb))a)))b)a|((a(b((a(ab|aa)|b(ab|bb))a|(b((a|b)b|aa)|a(ab))b)|a(a(b(ba|aa)|a(bb))|b((ba|aa)b|((a|b)b|aa)a)))|b(((b((a|b)b|aa)|a(ab))a|((ab|bb)b|((a|b)b|aa)a)b)a|(a((ab)b|(bb)a)|b((ab)a|(ba|aa)b))b))a|(a(((b(ba|aa)|a(bb|aa))b|(b(ba|aa)|a(bb))a)a|(a((bb)a|(ba)b)|b(a(aa)|b(ba|aa)))b)|b((b(((a|b)a|ab)a|((a|b)(a|b))b)|a(b((a|b)a|ab)|a(ab|b(a|b))))b|(((ab|bb)b|((a|b)b|aa)a)a|(a(bb|aa)|b(aa|b(a|b)))b)a))b)b)((b((((b(bb)|a(aa))a|(a(bb))b)b|(((ab)a|(ba|aa)b)b|(a(ab)|b(ab|aa))a)a)b|((b(a(ab|bb)|b(aa))|a(b(ba|aa)|a(bb|aa)))a|((((a|b)(a|b))a|(bb|aa)b)a|((ab|b(a|b))b|(ab|aa)a)b)b)a)|a(a((b(a((a|b)a|ab)|b(bb))|a(a((a|b)b|aa)|b((a|b)(a|b))))b|(a((ab|aa)a|(aa|b(a|b))b)|b(b(bb|aa)|a(bb)))a)|b((a((ab|b(a|b))b|(bb|ba)a)|b((ab|bb)b|(bb|ba)a))b|(a(b((a|b)(a|b))|a(ab))|b(a(aa)|b(ab|aa)))a)))b|(a(b(a(b(b(bb)|a((a|b)(a|b)))|a((ba|ab)b|(bb)a))|b(((a|b)(ba|aa))b|((ab|aa)a|(aa|b(a|b))b)a))|a(((b(ab|bb)|a(bb|ba))a|((ba)b)b)a|(a((a|b)(ba|aa))|b((ba|aa)a|((a|b)a|ab)b))b))|b(a(b(a(((a|b)(a|b))a|(bb|aa)b)|b(a(ba)|b(bb)))|a(a((aa|b(a|b))b|((a|b)b|aa)a)|b(((a|b)(a|b))a|(bb|aa)b)))|b(a(a((aa|b(a|b))b|((a|b)b|aa)a)|b((aa)b))|b(b(a(ab)|b(ab|aa))|a((ba)a|((a|b)a|ab)b)))))a)))"
-
-    messages %>%
-      rowwise() %>%
-      filter(str_detect(message, paste0("^", getRegex(0), "$"))) %>%
-      nrow()
+    messages$message %>%
+      intersect(getMessages(0)) %>%
+      length()
 
     ## [1] 299
 
 # Part 2
 
-    getRegex2 <- function(number) {
-      if (is.na(number)) {
-        return("")
-      }
-      if (number == 8) {
-        return(paste0("(", getRegex2(42), ")+"))
-      }
-      if (number == 11) {
-        return(
-          paste0(
-            "(",
-            getRegex2(42),
-            getRegex2(31),
-            ")|(",
-            getRegex2(42),
-            "{2}",
-            getRegex2(31),
-            "{2}",
-            ")|(",
-            getRegex2(42),
-            "{3}",
-            getRegex2(31),
-            "{3}",
-            ")|(",
-            getRegex2(42),
-            "{4}",
-            getRegex2(31),
-            "{4}",
-            ")|(",
-            getRegex2(42),
-            "{5}",
-            getRegex2(31),
-            "{5}",
-            ")"
-          )
-        )
-      }
-      if (!is.na(input$letters[[number + 1]])) {
-        return(input$letters[[number + 1]])
-      }
-      if (!is.na(input$alt2a[[number + 1]])) {
-        paste0(
-          "(",
-          getRegex2(input$alt1a[[number + 1]]),
-          getRegex2(input$alt1b[[number + 1]]),
-          "|",
-          getRegex2(input$alt2a[[number + 1]]),
-          getRegex2(input$alt2b[[number + 1]]),
-          ")"
-        )
-      } else {
-        paste0(
-          "(",
-          getRegex2(input$alt1a[[number + 1]]),
-          getRegex2(input$alt1b[[number + 1]]),
-          ")"
-        )
-      }
+As you look over the list of messages, you realize your matching rules
+aren’t quite right. To fix them, completely replace rules 8: 42 and 11:
+42 31 with the following:
+
+    8: 42 | 42 8
+    11: 42 31 | 42 11 31
+
+The other relevant rule is `0: 8 11`
+
+    getRegex <- function(num) {
+      getMessages(num) %>%
+        paste(collapse = "|") %>%
+        {paste0("(", ., ")")}
     }
-    getRegex2(0)
-
-    ## [1] "(((((b(a(((bb|aa)b|(bb)a)a|(b(bb))b)|b(((ab|b(a|b))(a|b))b|(a(ab|b(a|b))|b(ba|aa))a))|a(a(a(((a|b)(a|b))b|(ab|aa)a)|b(b((a|b)b|aa)|a(ab|aa)))|b(a(((a|b)b|aa)a|(bb|aa)b)|b(b(ba|aa)|a(bb)))))a|(a((b(b((a|b)(a|b))|a(ab))|a(b(bb)|a((a|b)(a|b))))b|(((ba)a)a|(b(ab)|a(bb|ba))b)a)|b(a(((a|b)(ba|aa))b|((bb)a|(ab|b(a|b))b)a)|b((((a|b)b|aa)a|(ab|b(a|b))b)b|(a(bb))a)))b)a|((a(b((a(ab|aa)|b(ab|bb))a|(b((a|b)b|aa)|a(ab))b)|a(a(b(ba|aa)|a(bb))|b((ba|aa)b|((a|b)b|aa)a)))|b(((b((a|b)b|aa)|a(ab))a|((ab|bb)b|((a|b)b|aa)a)b)a|(a((ab)b|(bb)a)|b((ab)a|(ba|aa)b))b))a|(a(((b(ba|aa)|a(bb|aa))b|(b(ba|aa)|a(bb))a)a|(a((bb)a|(ba)b)|b(a(aa)|b(ba|aa)))b)|b((b(((a|b)a|ab)a|((a|b)(a|b))b)|a(b((a|b)a|ab)|a(ab|b(a|b))))b|(((ab|bb)b|((a|b)b|aa)a)a|(a(bb|aa)|b(aa|b(a|b)))b)a))b)b))+((((b(a(((bb|aa)b|(bb)a)a|(b(bb))b)|b(((ab|b(a|b))(a|b))b|(a(ab|b(a|b))|b(ba|aa))a))|a(a(a(((a|b)(a|b))b|(ab|aa)a)|b(b((a|b)b|aa)|a(ab|aa)))|b(a(((a|b)b|aa)a|(bb|aa)b)|b(b(ba|aa)|a(bb)))))a|(a((b(b((a|b)(a|b))|a(ab))|a(b(bb)|a((a|b)(a|b))))b|(((ba)a)a|(b(ab)|a(bb|ba))b)a)|b(a(((a|b)(ba|aa))b|((bb)a|(ab|b(a|b))b)a)|b((((a|b)b|aa)a|(ab|b(a|b))b)b|(a(bb))a)))b)a|((a(b((a(ab|aa)|b(ab|bb))a|(b((a|b)b|aa)|a(ab))b)|a(a(b(ba|aa)|a(bb))|b((ba|aa)b|((a|b)b|aa)a)))|b(((b((a|b)b|aa)|a(ab))a|((ab|bb)b|((a|b)b|aa)a)b)a|(a((ab)b|(bb)a)|b((ab)a|(ba|aa)b))b))a|(a(((b(ba|aa)|a(bb|aa))b|(b(ba|aa)|a(bb))a)a|(a((bb)a|(ba)b)|b(a(aa)|b(ba|aa)))b)|b((b(((a|b)a|ab)a|((a|b)(a|b))b)|a(b((a|b)a|ab)|a(ab|b(a|b))))b|(((ab|bb)b|((a|b)b|aa)a)a|(a(bb|aa)|b(aa|b(a|b)))b)a))b)b)((b((((b(bb)|a(aa))a|(a(bb))b)b|(((ab)a|(ba|aa)b)b|(a(ab)|b(ab|aa))a)a)b|((b(a(ab|bb)|b(aa))|a(b(ba|aa)|a(bb|aa)))a|((((a|b)(a|b))a|(bb|aa)b)a|((ab|b(a|b))b|(ab|aa)a)b)b)a)|a(a((b(a((a|b)a|ab)|b(bb))|a(a((a|b)b|aa)|b((a|b)(a|b))))b|(a((ab|aa)a|(aa|b(a|b))b)|b(b(bb|aa)|a(bb)))a)|b((a((ab|b(a|b))b|(bb|ba)a)|b((ab|bb)b|(bb|ba)a))b|(a(b((a|b)(a|b))|a(ab))|b(a(aa)|b(ab|aa)))a)))b|(a(b(a(b(b(bb)|a((a|b)(a|b)))|a((ba|ab)b|(bb)a))|b(((a|b)(ba|aa))b|((ab|aa)a|(aa|b(a|b))b)a))|a(((b(ab|bb)|a(bb|ba))a|((ba)b)b)a|(a((a|b)(ba|aa))|b((ba|aa)a|((a|b)a|ab)b))b))|b(a(b(a(((a|b)(a|b))a|(bb|aa)b)|b(a(ba)|b(bb)))|a(a((aa|b(a|b))b|((a|b)b|aa)a)|b(((a|b)(a|b))a|(bb|aa)b)))|b(a(a((aa|b(a|b))b|((a|b)b|aa)a)|b((aa)b))|b(b(a(ab)|b(ab|aa))|a((ba)a|((a|b)a|ab)b)))))a))|((((b(a(((bb|aa)b|(bb)a)a|(b(bb))b)|b(((ab|b(a|b))(a|b))b|(a(ab|b(a|b))|b(ba|aa))a))|a(a(a(((a|b)(a|b))b|(ab|aa)a)|b(b((a|b)b|aa)|a(ab|aa)))|b(a(((a|b)b|aa)a|(bb|aa)b)|b(b(ba|aa)|a(bb)))))a|(a((b(b((a|b)(a|b))|a(ab))|a(b(bb)|a((a|b)(a|b))))b|(((ba)a)a|(b(ab)|a(bb|ba))b)a)|b(a(((a|b)(ba|aa))b|((bb)a|(ab|b(a|b))b)a)|b((((a|b)b|aa)a|(ab|b(a|b))b)b|(a(bb))a)))b)a|((a(b((a(ab|aa)|b(ab|bb))a|(b((a|b)b|aa)|a(ab))b)|a(a(b(ba|aa)|a(bb))|b((ba|aa)b|((a|b)b|aa)a)))|b(((b((a|b)b|aa)|a(ab))a|((ab|bb)b|((a|b)b|aa)a)b)a|(a((ab)b|(bb)a)|b((ab)a|(ba|aa)b))b))a|(a(((b(ba|aa)|a(bb|aa))b|(b(ba|aa)|a(bb))a)a|(a((bb)a|(ba)b)|b(a(aa)|b(ba|aa)))b)|b((b(((a|b)a|ab)a|((a|b)(a|b))b)|a(b((a|b)a|ab)|a(ab|b(a|b))))b|(((ab|bb)b|((a|b)b|aa)a)a|(a(bb|aa)|b(aa|b(a|b)))b)a))b)b){2}((b((((b(bb)|a(aa))a|(a(bb))b)b|(((ab)a|(ba|aa)b)b|(a(ab)|b(ab|aa))a)a)b|((b(a(ab|bb)|b(aa))|a(b(ba|aa)|a(bb|aa)))a|((((a|b)(a|b))a|(bb|aa)b)a|((ab|b(a|b))b|(ab|aa)a)b)b)a)|a(a((b(a((a|b)a|ab)|b(bb))|a(a((a|b)b|aa)|b((a|b)(a|b))))b|(a((ab|aa)a|(aa|b(a|b))b)|b(b(bb|aa)|a(bb)))a)|b((a((ab|b(a|b))b|(bb|ba)a)|b((ab|bb)b|(bb|ba)a))b|(a(b((a|b)(a|b))|a(ab))|b(a(aa)|b(ab|aa)))a)))b|(a(b(a(b(b(bb)|a((a|b)(a|b)))|a((ba|ab)b|(bb)a))|b(((a|b)(ba|aa))b|((ab|aa)a|(aa|b(a|b))b)a))|a(((b(ab|bb)|a(bb|ba))a|((ba)b)b)a|(a((a|b)(ba|aa))|b((ba|aa)a|((a|b)a|ab)b))b))|b(a(b(a(((a|b)(a|b))a|(bb|aa)b)|b(a(ba)|b(bb)))|a(a((aa|b(a|b))b|((a|b)b|aa)a)|b(((a|b)(a|b))a|(bb|aa)b)))|b(a(a((aa|b(a|b))b|((a|b)b|aa)a)|b((aa)b))|b(b(a(ab)|b(ab|aa))|a((ba)a|((a|b)a|ab)b)))))a){2})|((((b(a(((bb|aa)b|(bb)a)a|(b(bb))b)|b(((ab|b(a|b))(a|b))b|(a(ab|b(a|b))|b(ba|aa))a))|a(a(a(((a|b)(a|b))b|(ab|aa)a)|b(b((a|b)b|aa)|a(ab|aa)))|b(a(((a|b)b|aa)a|(bb|aa)b)|b(b(ba|aa)|a(bb)))))a|(a((b(b((a|b)(a|b))|a(ab))|a(b(bb)|a((a|b)(a|b))))b|(((ba)a)a|(b(ab)|a(bb|ba))b)a)|b(a(((a|b)(ba|aa))b|((bb)a|(ab|b(a|b))b)a)|b((((a|b)b|aa)a|(ab|b(a|b))b)b|(a(bb))a)))b)a|((a(b((a(ab|aa)|b(ab|bb))a|(b((a|b)b|aa)|a(ab))b)|a(a(b(ba|aa)|a(bb))|b((ba|aa)b|((a|b)b|aa)a)))|b(((b((a|b)b|aa)|a(ab))a|((ab|bb)b|((a|b)b|aa)a)b)a|(a((ab)b|(bb)a)|b((ab)a|(ba|aa)b))b))a|(a(((b(ba|aa)|a(bb|aa))b|(b(ba|aa)|a(bb))a)a|(a((bb)a|(ba)b)|b(a(aa)|b(ba|aa)))b)|b((b(((a|b)a|ab)a|((a|b)(a|b))b)|a(b((a|b)a|ab)|a(ab|b(a|b))))b|(((ab|bb)b|((a|b)b|aa)a)a|(a(bb|aa)|b(aa|b(a|b)))b)a))b)b){3}((b((((b(bb)|a(aa))a|(a(bb))b)b|(((ab)a|(ba|aa)b)b|(a(ab)|b(ab|aa))a)a)b|((b(a(ab|bb)|b(aa))|a(b(ba|aa)|a(bb|aa)))a|((((a|b)(a|b))a|(bb|aa)b)a|((ab|b(a|b))b|(ab|aa)a)b)b)a)|a(a((b(a((a|b)a|ab)|b(bb))|a(a((a|b)b|aa)|b((a|b)(a|b))))b|(a((ab|aa)a|(aa|b(a|b))b)|b(b(bb|aa)|a(bb)))a)|b((a((ab|b(a|b))b|(bb|ba)a)|b((ab|bb)b|(bb|ba)a))b|(a(b((a|b)(a|b))|a(ab))|b(a(aa)|b(ab|aa)))a)))b|(a(b(a(b(b(bb)|a((a|b)(a|b)))|a((ba|ab)b|(bb)a))|b(((a|b)(ba|aa))b|((ab|aa)a|(aa|b(a|b))b)a))|a(((b(ab|bb)|a(bb|ba))a|((ba)b)b)a|(a((a|b)(ba|aa))|b((ba|aa)a|((a|b)a|ab)b))b))|b(a(b(a(((a|b)(a|b))a|(bb|aa)b)|b(a(ba)|b(bb)))|a(a((aa|b(a|b))b|((a|b)b|aa)a)|b(((a|b)(a|b))a|(bb|aa)b)))|b(a(a((aa|b(a|b))b|((a|b)b|aa)a)|b((aa)b))|b(b(a(ab)|b(ab|aa))|a((ba)a|((a|b)a|ab)b)))))a){3})|((((b(a(((bb|aa)b|(bb)a)a|(b(bb))b)|b(((ab|b(a|b))(a|b))b|(a(ab|b(a|b))|b(ba|aa))a))|a(a(a(((a|b)(a|b))b|(ab|aa)a)|b(b((a|b)b|aa)|a(ab|aa)))|b(a(((a|b)b|aa)a|(bb|aa)b)|b(b(ba|aa)|a(bb)))))a|(a((b(b((a|b)(a|b))|a(ab))|a(b(bb)|a((a|b)(a|b))))b|(((ba)a)a|(b(ab)|a(bb|ba))b)a)|b(a(((a|b)(ba|aa))b|((bb)a|(ab|b(a|b))b)a)|b((((a|b)b|aa)a|(ab|b(a|b))b)b|(a(bb))a)))b)a|((a(b((a(ab|aa)|b(ab|bb))a|(b((a|b)b|aa)|a(ab))b)|a(a(b(ba|aa)|a(bb))|b((ba|aa)b|((a|b)b|aa)a)))|b(((b((a|b)b|aa)|a(ab))a|((ab|bb)b|((a|b)b|aa)a)b)a|(a((ab)b|(bb)a)|b((ab)a|(ba|aa)b))b))a|(a(((b(ba|aa)|a(bb|aa))b|(b(ba|aa)|a(bb))a)a|(a((bb)a|(ba)b)|b(a(aa)|b(ba|aa)))b)|b((b(((a|b)a|ab)a|((a|b)(a|b))b)|a(b((a|b)a|ab)|a(ab|b(a|b))))b|(((ab|bb)b|((a|b)b|aa)a)a|(a(bb|aa)|b(aa|b(a|b)))b)a))b)b){4}((b((((b(bb)|a(aa))a|(a(bb))b)b|(((ab)a|(ba|aa)b)b|(a(ab)|b(ab|aa))a)a)b|((b(a(ab|bb)|b(aa))|a(b(ba|aa)|a(bb|aa)))a|((((a|b)(a|b))a|(bb|aa)b)a|((ab|b(a|b))b|(ab|aa)a)b)b)a)|a(a((b(a((a|b)a|ab)|b(bb))|a(a((a|b)b|aa)|b((a|b)(a|b))))b|(a((ab|aa)a|(aa|b(a|b))b)|b(b(bb|aa)|a(bb)))a)|b((a((ab|b(a|b))b|(bb|ba)a)|b((ab|bb)b|(bb|ba)a))b|(a(b((a|b)(a|b))|a(ab))|b(a(aa)|b(ab|aa)))a)))b|(a(b(a(b(b(bb)|a((a|b)(a|b)))|a((ba|ab)b|(bb)a))|b(((a|b)(ba|aa))b|((ab|aa)a|(aa|b(a|b))b)a))|a(((b(ab|bb)|a(bb|ba))a|((ba)b)b)a|(a((a|b)(ba|aa))|b((ba|aa)a|((a|b)a|ab)b))b))|b(a(b(a(((a|b)(a|b))a|(bb|aa)b)|b(a(ba)|b(bb)))|a(a((aa|b(a|b))b|((a|b)b|aa)a)|b(((a|b)(a|b))a|(bb|aa)b)))|b(a(a((aa|b(a|b))b|((a|b)b|aa)a)|b((aa)b))|b(b(a(ab)|b(ab|aa))|a((ba)a|((a|b)a|ab)b)))))a){4})|((((b(a(((bb|aa)b|(bb)a)a|(b(bb))b)|b(((ab|b(a|b))(a|b))b|(a(ab|b(a|b))|b(ba|aa))a))|a(a(a(((a|b)(a|b))b|(ab|aa)a)|b(b((a|b)b|aa)|a(ab|aa)))|b(a(((a|b)b|aa)a|(bb|aa)b)|b(b(ba|aa)|a(bb)))))a|(a((b(b((a|b)(a|b))|a(ab))|a(b(bb)|a((a|b)(a|b))))b|(((ba)a)a|(b(ab)|a(bb|ba))b)a)|b(a(((a|b)(ba|aa))b|((bb)a|(ab|b(a|b))b)a)|b((((a|b)b|aa)a|(ab|b(a|b))b)b|(a(bb))a)))b)a|((a(b((a(ab|aa)|b(ab|bb))a|(b((a|b)b|aa)|a(ab))b)|a(a(b(ba|aa)|a(bb))|b((ba|aa)b|((a|b)b|aa)a)))|b(((b((a|b)b|aa)|a(ab))a|((ab|bb)b|((a|b)b|aa)a)b)a|(a((ab)b|(bb)a)|b((ab)a|(ba|aa)b))b))a|(a(((b(ba|aa)|a(bb|aa))b|(b(ba|aa)|a(bb))a)a|(a((bb)a|(ba)b)|b(a(aa)|b(ba|aa)))b)|b((b(((a|b)a|ab)a|((a|b)(a|b))b)|a(b((a|b)a|ab)|a(ab|b(a|b))))b|(((ab|bb)b|((a|b)b|aa)a)a|(a(bb|aa)|b(aa|b(a|b)))b)a))b)b){5}((b((((b(bb)|a(aa))a|(a(bb))b)b|(((ab)a|(ba|aa)b)b|(a(ab)|b(ab|aa))a)a)b|((b(a(ab|bb)|b(aa))|a(b(ba|aa)|a(bb|aa)))a|((((a|b)(a|b))a|(bb|aa)b)a|((ab|b(a|b))b|(ab|aa)a)b)b)a)|a(a((b(a((a|b)a|ab)|b(bb))|a(a((a|b)b|aa)|b((a|b)(a|b))))b|(a((ab|aa)a|(aa|b(a|b))b)|b(b(bb|aa)|a(bb)))a)|b((a((ab|b(a|b))b|(bb|ba)a)|b((ab|bb)b|(bb|ba)a))b|(a(b((a|b)(a|b))|a(ab))|b(a(aa)|b(ab|aa)))a)))b|(a(b(a(b(b(bb)|a((a|b)(a|b)))|a((ba|ab)b|(bb)a))|b(((a|b)(ba|aa))b|((ab|aa)a|(aa|b(a|b))b)a))|a(((b(ab|bb)|a(bb|ba))a|((ba)b)b)a|(a((a|b)(ba|aa))|b((ba|aa)a|((a|b)a|ab)b))b))|b(a(b(a(((a|b)(a|b))a|(bb|aa)b)|b(a(ba)|b(bb)))|a(a((aa|b(a|b))b|((a|b)b|aa)a)|b(((a|b)(a|b))a|(bb|aa)b)))|b(a(a((aa|b(a|b))b|((a|b)b|aa)a)|b((aa)b))|b(b(a(ab)|b(ab|aa))|a((ba)a|((a|b)a|ab)b)))))a){5}))"
-
+    reg42 <- getRegex(42)
+    reg11 <- getRegex(11)
+    reg31 <- getRegex(31)
+    regex <- paste0("^", reg42, "+((", reg42, reg31, ")|(", reg42, "{2}", reg31,
+                    "{2})|(", reg42, "{3}", reg31, "{3})|(", reg42, "{4}", reg31,
+                    "{4}))$")
     messages %>%
       rowwise() %>%
-      filter(str_detect(message, paste0("^", getRegex2(0), "$"))) %>%
+      filter(str_detect(message, regex)) %>%
       nrow()
 
-    ## [1] 371
+    ## [1] 414
