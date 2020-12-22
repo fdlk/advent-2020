@@ -51,6 +51,12 @@ Dec 22, 2020
 
     ## [1] 31455
 
+# Part 2
+
+> You lost to the small crab! Fortunately, crabs aren’t very good at
+> recursion. To defend your honor as a Raft Captain, you challenge the
+> small crab to a game of Recursive Combat.
+
     library(hash)
 
     ## hash-2.2.6.1 provided by Decision Patterns

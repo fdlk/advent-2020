@@ -45,6 +45,9 @@ while (between(length(p1), 1, num_cards - 1)) {
 winning_hand <- c(p1, p2)
 sum(winning_hand * (num_cards:1))
 ```
+# Part 2
+> You lost to the small crab! Fortunately, crabs aren't very good at recursion. To defend your honor as a Raft Captain, you challenge the small crab to a game of Recursive Combat.
+
 ```{r}
 library(hash)
 game <- function(p1, p2) {
