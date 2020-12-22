@@ -23,3 +23,4 @@ Solutions for https://adventofcode.com/2020 in R
 * [Day 19: Monster Messages](day19.md)
 * [Day 20: Jurassic Jigsaw](day20.md)
 * [Day 21: Allergen Assessment](day21.md)
+* [Day 22: Crab Combat](day22.md)
