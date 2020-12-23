@@ -1,0 +1,110 @@
+— Day 23: Crab Cups —
+================
+Fleur Kelpin
+Dec 23, 2020
+
+    library(tidyverse)
+    input <- "362981754" %>%
+      str_split("") %>%
+      unlist() %>%
+      as.integer()
+
+# Part 1
+
+> Using your labeling, simulate 100 moves. What are the labels on the
+> cups after cup 1?
+
+    get_destination <- function(current) {
+      if (current == 1) {
+        ncups
+      } else {
+        current - 1
+      }
+    }
+
+    cups <- input
+    ncups <- length(cups)
+    for(i in 1:100) {
+      current <- cups[[1]]
+      triple <- cups[2:4]
+      rest <- cups[5:ncups]
+      destination <- get_destination(current)
+      while (!any(rest == destination)) {
+        destination <- get_destination(destination)
+      }
+      index <- which(rest == destination)[[1]]
+      if (index == length(rest)) {
+        cups <- c(rest, triple, current)
+      } else {
+        cups <- c(rest[1:index], triple, rest[(index+1):length(rest)], current)
+      }
+    }
+    cups
+
+    ## [1] 7 9 8 6 3 5 1 2 4
+
+# Part 2
+
+> Due to what you can only assume is a mistranslation (you’re not
+> exactly fluent in Crab), you are quite surprised when the crab starts
+> arranging many cups in a circle on your raft - one million (1000000)
+> in total.
+
+> Your labeling is still correct for the first few cups; after that, the
+> remaining cups are just numbered in an increasing fashion starting
+> from the number after the highest number in your list and proceeding
+> one by one until one million is reached. (For example, if your
+> labeling were 54321, the cups would be numbered 5, 4, 3, 2, 1, and
+> then start counting up from 6 until one million is reached.) In this
+> way, every number from one through one million is used exactly once.
+
+    cups <- 1:1000000
+    cups[1:length(input)] <- input
+    ncups <- length(cups)
+
+> After discovering where you made the mistake in translating Crab
+> Numbers, you realize the small crab isn’t going to do merely 100
+> moves; the crab is going to do ten million (10000000) moves!
+
+> Determine which two cups will end up immediately clockwise of cup 1.
+> What do you get if you multiply their labels together?
+
+Use a data structure that can be updated in O(1) instead of keeping all
+cup labels in order in the vector cause right now the entire vector
+needs to be shuffled around for each iteration.
+
+Store the label of the next cup (clockwise) in the vector instead.
+
+    next_cup <- integer(ncups)
+    for(i in 1:(ncups - 1)) {
+      next_cup[cups[i]] <- cups[[i+1]]
+    }
+    next_cup[cups[[ncups]]] <- cups[[1]]
+    current <- cups[[1]]
+
+Then we can execute the desired number of moves more quickly.
+
+    tictoc::tic()
+    for (i in 1:10000000) {
+      destination <- get_destination(current)
+      
+      triple1 <- next_cup[[current]]
+      triple2 <- next_cup[[triple1]]
+      triple3 <- next_cup[[triple2]]
+      while (destination %in% c(triple1, triple2, triple3)) {
+        destination <- get_destination(destination)
+      }
+      
+      next_current <- next_cup[[triple3]]
+      next_cup[triple3] <- next_cup[[destination]]
+      next_cup[destination] <- triple1
+      next_cup[current] <- next_current
+      current <- next_current
+    }
+    tictoc::toc()
+
+    ## 20.512 sec elapsed
+
+    prod(next_cup[[1]], next_cup[[next_cup[[1]]]])
+
+    ## [1] 12757828710
