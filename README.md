@@ -25,3 +25,4 @@ Solutions for https://adventofcode.com/2020 in R
 * [Day 21: Allergen Assessment](day21.md)
 * [Day 22: Crab Combat](day22.md)
 * [Day 23: Crab Cups](day23.md)
+* [Day 24: Lobby Layout](day24.md)
