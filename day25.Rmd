@@ -1,0 +1,31 @@
+---
+title: "--- Day 25: Combo Breaker ---"
+author: Fleur Kelpin
+date: Dec 25, 2020
+output: github_document
+---
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(numbers)
+input <- read_csv("day25.txt", col_names = "key")
+input
+```
+# Part 1
+```{r}
+transform_subject <- function (subject, loop) {
+  modpower(subject, loop, 20201227)
+}
+
+find_loop_size <- function (key) {
+  x <- 1
+  loop <- 0
+  repeat {
+    loop <- loop + 1
+    x <- (x * 7) %% 20201227
+    if (x == key) {
+      return(loop)
+    }
+  }
+}
+transform_subject(input$key[[1]], find_loop_size(input$key[[2]]))
+```
